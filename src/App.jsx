@@ -2,19 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Camera,
   Folder,
-  AlertCircle,
   Monitor,
   SwitchCamera,
-  CircleArrowLeft,
-  RotateCcw,
-  CrossIcon,
-  Cross,
   CircleX,
+  RotateCcw,
 } from "lucide-react";
-// import { Alert, AlertDescription } from '@/components/ui/alert';
 import "./App.css";
-import PromptSelection from "./components/PromptSelection";
-import { AI_MODEL_TYPE, negativeprompt, prompts } from "./shared/constants";
+import { AI_MODEL_TYPE, API_URL, negativeprompt, prompts } from "./shared/constants";
 import { SOUND_FILES } from "./shared/sounds";
 import useSound from "use-sound";
 import PromptSlider from "./components/PromptSlider";
@@ -139,18 +133,15 @@ const MilitaryCameraInterface = () => {
   const [playButtonPress, { stopButtonPress }] = useSound(
     SOUND_FILES.buttonPress
   );
-  const [playCameraPress, { stopCameraPress }] = useSound(
+  const [playCameraPress] = useSound(
     SOUND_FILES.cameraPress
   );
-  const [playStartup, { stopStartup }] = useSound(SOUND_FILES.startup);
+  const [playStartup] = useSound(SOUND_FILES.startup);
 
   useEffect(() => {
     if (!bootSequence) {
       playStartup();
     }
-    // setTimeout(()=> {
-    //   stopStartup();
-    // },5000)
   }, [bootSequence]);
 
   // Handler function for toggle change
@@ -202,49 +193,6 @@ const MilitaryCameraInterface = () => {
   const generateImage = async () => {
     playCameraPress();
     capturePhoto();
-
-    return;
-    if (isProcessing) return;
-
-    try {
-      setIsProcessing(true);
-      setStatus("PROCESSING");
-      setError(null);
-
-      const requestConfig = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_CONFIG.API_KEY}`,
-        },
-        body: JSON.stringify({
-          prompt: "your_prompt_here",
-          negative_prompt: "your_negative_prompt_here",
-          steps: 20,
-          width: 512,
-          height: 512,
-          guidance_scale: 7.5,
-        }),
-      };
-
-      const response = await fetch(
-        API_CONFIG.STABLE_DIFFUSION_ENDPOINT,
-        requestConfig
-      );
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setGeneratedImages((prevImages) => [...prevImages, data.image]);
-      setStatus("STANDBY");
-    } catch (err) {
-      setError(err.message);
-      setStatus("ERROR");
-    } finally {
-      setIsProcessing(false);
-    }
   };
 
   // Function to start the camera stream
@@ -386,60 +334,6 @@ const MilitaryCameraInterface = () => {
     }
   };
 
-  const handleSubmit = async (prompt) => {
-    setLoading(true);
-    const contentType = "image/png"; // Specify the MIME type
-    const imageBlob = base64ToBlob(snapshot, contentType);
-
-    const formData = new FormData();
-    formData.append("prompt", prompt || selectedPrompt); // Ensure selectedPrompt is defined
-    formData.append("image", imageBlob); // Ensure snapshot is a valid file object
-    formData.append("negative_prompt", negativeprompt); // Ensure snapshot is a valid file object
-    formData.append("cgf_scale", 4.5); // Ensure snapshot is a valid file object
-    formData.append("controlnet_type", "depth"); // Ensure snapshot is a valid file object
-    formData.append("controlnet_weight", 0.55); // Ensure snapshot is a valid file object
-
-    try {
-      const response = await fetch("http://3.210.112.3:5002/generate-image", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok && response.body) {
-        // Handle the readable stream from the response
-        const reader = response.body.getReader();
-        const chunks = [];
-        let done = false;
-
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          if (value) chunks.push(value);
-          done = streamDone;
-        }
-
-        // Combine chunks into a single Blob
-        const blob = new Blob(chunks);
-
-        // Create an Object URL for the Blob
-        const imageUrl = URL.createObjectURL(blob);
-        setLoading(false);
-        setOutputImage(imageUrl);
-        // Display the image (example: dynamically add an image element)
-        // const imgElement = document.createElement("img");
-        // imgElement.src = imageUrl;
-        // imgElement.alt = "Generated Image";
-        // document.body.appendChild(imgElement); // Append to the DOM
-      } else {
-        setLoading(false);
-        setImageError(response.statusText);
-        console.error("Error generating image:", response.statusText);
-      }
-    } catch (error) {
-      setLoading(false);
-      setImageError("Something went wrong. Please retry");
-    }
-  };
-
   const handleSubmitRequest = async (prompt) => {
     setLoading(true);
 
@@ -453,11 +347,14 @@ const MilitaryCameraInterface = () => {
     formData.append("cgf_scale", 4.5);
     formData.append("controlnet_type", "depth");
     formData.append("controlnet_weight", 0.55);
-    formData.append("model_name", isBasicMode ? AI_MODEL_TYPE.TURBO : AI_MODEL_TYPE.HQ);
+    formData.append(
+      "model_name",
+      isBasicMode ? AI_MODEL_TYPE.HQ : AI_MODEL_TYPE.TURBO
+    );
 
     try {
       const response = await fetch(
-        "http://3.210.112.3:5002/generate-image-from-external",
+        `${API_URL}generate-image-from-external`,
         {
           method: "POST",
           body: formData,
@@ -485,13 +382,13 @@ const MilitaryCameraInterface = () => {
 
   const pollStatus = async (requestId) => {
     const pollInterval = 5000; // 5 seconds
-    const maxRetries = 20; // Adjust based on timeout needs
+    const maxRetries = isBasicMode ? 50 : 200; // Adjust based on timeout needs
     let retries = 0;
 
     const checkStatus = async () => {
       try {
         const response = await fetch(
-          `http://3.210.112.3:5002/check-status/${requestId}`
+          `${API_URL}check-status/${requestId}`
         );
 
         const contentType = response.headers.get("Content-Type");
@@ -530,8 +427,6 @@ const MilitaryCameraInterface = () => {
 
     checkStatus(); // Start the first check
   };
-
-  const textClass = `text-${colorScheme}-100`;
 
   // Start the camera stream when the component mounts
   useEffect(() => {
@@ -579,117 +474,6 @@ const MilitaryCameraInterface = () => {
       </div>
     );
   }
-
-  // if (snapshot) {
-  //   return (
-  //     <div>
-  //       <div
-  //         className="mt-5 ml-5"
-  //         style={{
-  //           height: "20px",
-  //           width: "20px",
-  //         }}
-  //         onClick={handleGoBack}
-  //       >
-  //         <CircleArrowLeft className={`w-8 h-8`} />
-  //       </div>
-  //       <div className="justify-between p-4 items-end">
-  //         <PromptSelection
-  //           handleSelectChange={handlePromptChange}
-  //           colorScheme={colorScheme}
-  //         />
-  //       </div>
-  //       <div
-  //         className="mt-6"
-  //         style={{
-  //           display: "flex",
-  //           justifyContent: "space-between",
-  //           marginRight: "20px",
-  //           marginLeft: "20px",
-  //           alignItems: "center",
-  //         }}
-  //       >
-  //         <div
-  //           className={`imageContainer rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 bg-gradient-to-br from-${colorScheme}-500 to-black`}
-  //         >
-  //           <img src={snapshot} className="image rounded-md" />
-  //         </div>
-  //         <button
-  //           className={`
-  //   btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-  //   bg-${colorScheme}-600 text-white
-  //   hover:bg-${colorScheme}-700
-  //   focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-  //   disabled:bg-gray-400 disabled:cursor-not-allowed
-  // `}
-  //           onClick={handleSubmit}
-  //           disabled={!selectedPrompt}
-  //         >
-  //           Transform
-  //         </button>
-  //         <div
-  //           className={`imageContainer rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 bg-gradient-to-br from-${colorScheme}-500 to-black`}
-  //         >
-  //           {outputImage?.length ? (
-  //             <img src={outputImage} className="image rounded-md" />
-  //           ) : null}
-  //           {imageError?.length ? (
-  //             <h2 className={textClass}>{imageError}</h2>
-  //           ) : null}
-  //           {loading ? (
-  //             <div
-  //               className={`flex w-full animate-loading scanning-line`}
-  //               style={{
-  //                 borderColor: colorScheme, // Set border color dynamically
-  //               }}
-  //             />
-  //           ) : null}
-  //         </div>
-  //       </div>
-
-  //       <div
-  //         className="mt-10"
-  //         style={{
-  //           display: "flex",
-  //           justifyContent: "center",
-  //           marginRight: "20px",
-  //           marginLeft: "20px",
-  //           alignItems: "center",
-  //           gap: "20px",
-  //         }}
-  //       >
-  //         <button
-  //           className={`
-  //   btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-  //   bg-${colorScheme}-600 text-white
-  //   hover:bg-${colorScheme}-700
-  //   focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-  //   disabled:bg-gray-400 disabled:cursor-not-allowed
-  //   w-32
-  // `}
-  //           onClick={handleShare}
-  //           disabled={!outputImage}
-  //         >
-  //           Share
-  //         </button>
-  //         <button
-  //           className={`
-  //   btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-  //   bg-${colorScheme}-600 text-white
-  //   hover:bg-${colorScheme}-700
-  //   focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-  //   disabled:bg-gray-400 disabled:cursor-not-allowed
-  //    w-32
-  // `}
-  //           onClick={handleDownload}
-  //           disabled={!outputImage}
-  //         >
-  //           Download
-  //         </button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <>
@@ -844,7 +628,7 @@ const MilitaryCameraInterface = () => {
                       </div>
                     </label>
                   </div>
-                  <button
+                {!outputImage?.length ?  <button
                     className={`right-0 mr-2 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
                   ${
                     colorScheme === colorScheme
@@ -859,10 +643,10 @@ const MilitaryCameraInterface = () => {
                     }}
                     onClick={handleGoBack}
                   >
-                    <CircleX
+                    <RotateCcw 
                       className={`w-6 h-6 group-hover:scale-110 transition-transform`}
                     />
-                  </button>
+                  </button> : null}
                 </div>
               ) : null}
             </div>
@@ -1094,16 +878,6 @@ const MilitaryCameraInterface = () => {
               playsInline
               className={`rounded-lg w-full max-w-full h-screen 
             bg-gradient-to-br from-${colorScheme}-500 to-black`}
-
-              // style={{
-              //   border: `2px solid ${colorScheme}`,
-              //   borderRadius: "8px",
-              //   marginBottom: "20px",
-              //   width: "100%",
-              //   maxWidth: "100vw",
-              //   height: "100vh",
-              //   backgroundImage: `linear-gradient(145deg, ${colorScheme}, ${"black"})`,
-              // }}
             ></video>
           )}
           <canvas ref={canvasRef} style={styles.canvas}></canvas>

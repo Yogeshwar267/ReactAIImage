@@ -16,3 +16,5 @@ export const AI_MODEL_TYPE = {
   HQ: "juggernautXL_v7Rundiffusion",
   TURBO: "DreamShaperXL_Turbo_dpmppSdeKarras_half_pruned_6",
 };
+
+export const API_URL = 'https://api.sd-camera.projectlabs.in/'
