@@ -511,7 +511,7 @@ const MilitaryCameraInterface = () => {
         >
           {/* Color scheme switcher */}
           {!outputImage?.length && !snapshot ? (
-            <div className="absolute top-14 right-4 flex space-x-2 z-50">
+            <div className="absolute top-14 right-4 flex space-x-2 z-50 right-0 left-0 w-max mx-auto justify-center bg-black/40 p-4 rounded-lg">
               
               {Object.keys(colorSchemes).map((scheme) => {
                 return (
