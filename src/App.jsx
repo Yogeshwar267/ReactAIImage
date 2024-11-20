@@ -917,7 +917,7 @@ const MilitaryCameraInterface = () => {
                   <label htmlFor="switchMonthly">HQ</label>
                   <label htmlFor="switchYearly">Turbo</label>
                   <div className="switch-wrapper">
-                    <div className="switch">
+                    <div className="switch" style={{ color: colorScheme }}>
                       <div>HQ</div>
                       <div>Turbo</div>
                     </div>
