@@ -164,7 +164,6 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  color: red !important;
 }
 
 .switches-container input:nth-of-type(1):checked~.switch-wrapper {
@@ -202,4 +201,19 @@ body {
 
 .slick-prev:before, .slick-next:before {
   font-size: 30px !important;
+}
+
+@media only screen and (max-width:1680px) {
+  .switches-container label {
+    font-size: 14px;
+  }
+
+  .switch div {
+    font-size: 14px;
+  }
+
+  .switches-container {
+    line-height: 2.4rem;
+    width: 16rem
+  }
 }
