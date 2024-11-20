@@ -728,35 +728,32 @@ const MilitaryCameraInterface = () => {
           className={`absolute inset-0 bg-gradient-to-b from-${colors.primary}-900/40 to-transparent z-10`}
         >
           {/* Color scheme switcher */}
-          <div className={`backdrop-blur-md p-4 w-max min-w-28 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 absolute top-14 flex space-x-2 z-50 left-0 right-0 justify-center mx-auto`} style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
-            {/* <button
-            className={`p-2 rounded-lg backdrop-blur-md border transition-all
-               `}
-            onClick={() => setIsFrontCamera((prev) => !prev)}
-          >
-            <SwitchCamera className={`w-4 h-4`} />
-          </button> */}
-            {Object.keys(colorSchemes).map((scheme) => {
-              return (
-                <button
-                  key={scheme}
-                  onClick={() => {
-                    setColorScheme(scheme);
-                    playButtonPress();
-                  }}
-                  className={`p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
-                ${colorScheme === scheme
-                      ? `bg-${scheme}-900/50 border-${scheme}-400/50`
-                      : `bg-${scheme}-900/20 border-${scheme}-400/20`
-                    }`}
-                >
-                  <Monitor
-                    className={`w-4 h-4 text-${scheme}-400 group-hover:scale-150 transition-transform`}
-                  />
-                </button>
-              );
-            })}
-          </div>
+          {!outputImage?.length && !snapshot ? (
+            <div className="absolute top-14 right-4 flex space-x-2 z-50 right-0 left-0 w-max mx-auto justify-center bg-black/40 p-4 rounded-lg">
+              
+              {Object.keys(colorSchemes).map((scheme) => {
+                return (
+                  <button
+                    key={scheme}
+                    onClick={() => {
+                      setColorScheme(scheme);
+                      playButtonPress();
+                    }}
+                    className={`p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
+                ${
+                  colorScheme === scheme
+                    ? `bg-${scheme}-900/50 border-${scheme}-400/50`
+                    : `bg-${scheme}-900/20 border-${scheme}-400/20`
+                }`}
+                  >
+                    <Monitor
+                      className={`w-4 h-4 text-${scheme}-400 group-hover:scale-150 transition-transform`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
 
           {/* DOS-style header */}
           <div
@@ -827,22 +824,6 @@ const MilitaryCameraInterface = () => {
               </div>
               {snapshot ? (
                 <div className="flex-col gap-5 justify-items-end">
-                  {/* <div className="my-5">
-                    <label class="relative inline-flex cursor-pointer items-center">
-                      <input
-                        type="checkbox"
-                        checked={isBasicMode}
-                        onChange={handleToggle}
-                        class="peer sr-only"
-                      />
-                      <div
-                        class={`peer flex h-8 items-center gap-4 rounded-full bg-${colorScheme}-600 px-3 after:absolute after:left-1 after: after:h-6 after:w-16 after:rounded-full after:bg-white/40 after:transition-all after:content-[''] peer-checked:bg-stone-600 peer-checked:after:translate-x-full peer-focus:outline-none dark:border-slate-600 dark:bg-slate-700 text-sm text-white`}
-                      >
-                        <span>Turbo</span>
-                        <span>HQ</span>
-                      </div>
-                    </label>
-                  </div> */}
                   <button
                     className={`right-0 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
                   ${colorScheme === colorScheme
@@ -851,16 +832,16 @@ const MilitaryCameraInterface = () => {
                       } transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20`}
-                    style={{
-                      height: "40px",
-                      width: "40px",
-                    }}
-                    onClick={handleGoBack}
-                  >
-                    <CircleX
-                      className={`w-6 h-6 group-hover:scale-110 transition-transform`}
-                    />
-                  </button>
+                      style={{
+                        height: "40px",
+                        width: "40px",
+                      }}
+                      onClick={handleGoBack}
+                    >
+                      <RotateCcw
+                        className={`w-6 h-6 group-hover:scale-110 transition-transform`}
+                      />
+                    </button>
                 </div>
               ) : null}
             </div>
@@ -1135,16 +1116,6 @@ const MilitaryCameraInterface = () => {
               playsInline
               className={`rounded-lg w-full max-w-full h-screen 
             bg-gradient-to-br from-${colorScheme}-500 to-black`}
-
-            // style={{
-            //   border: `2px solid ${colorScheme}`,
-            //   borderRadius: "8px",
-            //   marginBottom: "20px",
-            //   width: "100%",
-            //   maxWidth: "100vw",
-            //   height: "100vh",
-            //   backgroundImage: `linear-gradient(145deg, ${colorScheme}, ${"black"})`,
-            // }}
             ></video>
           )}
           <canvas ref={canvasRef} style={styles.canvas}></canvas>
