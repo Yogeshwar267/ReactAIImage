@@ -10,6 +10,8 @@ import {
   CrossIcon,
   Cross,
   CircleX,
+  Download,
+  Share2,
 } from "lucide-react";
 // import { Alert, AlertDescription } from '@/components/ui/alert';
 import "./App.css";
@@ -453,7 +455,10 @@ const MilitaryCameraInterface = () => {
     formData.append("cgf_scale", 4.5);
     formData.append("controlnet_type", "depth");
     formData.append("controlnet_weight", 0.55);
-    formData.append("model_name", isBasicMode ? AI_MODEL_TYPE.TURBO : AI_MODEL_TYPE.HQ);
+    formData.append(
+      "model_name",
+      isBasicMode ? AI_MODEL_TYPE.TURBO : AI_MODEL_TYPE.HQ
+    );
 
     try {
       const response = await fetch(
@@ -730,7 +735,6 @@ const MilitaryCameraInterface = () => {
           {/* Color scheme switcher */}
           {!outputImage?.length && !snapshot ? (
             <div className="absolute top-14 right-4 flex space-x-2 z-50 right-0 left-0 w-max mx-auto justify-center bg-black/40 p-4 rounded-lg">
-              
               {Object.keys(colorSchemes).map((scheme) => {
                 return (
                   <button
@@ -815,33 +819,80 @@ const MilitaryCameraInterface = () => {
                 </div>
               </div>
             </div>
-            <div className="flex gap-2.5 items-center">
+            <div className="flex gap-2.5 items-center flex-col">
               <div
-                className={`backdrop-blur-md p-4 min-w-28 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20`}
+                className={`backdrop-blur-md p-4 min-w-28 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 custom-button-spacing`}
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
               >
                 {time.toLocaleTimeString()}
               </div>
               {snapshot ? (
-                <div className="flex-col gap-5 justify-items-end">
+                <div className="justify-items-end flex gap-2 items-center">
                   <button
                     className={`right-0 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
-                  ${colorScheme === colorScheme
-                        ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
-                        : `bg-${colorScheme}-900/20 border-${colorScheme}-400/20`
-                      } transition-all duration-300 
+                  ${
+                    colorScheme === colorScheme
+                      ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
+                      : `bg-${colorScheme}-900/20 border-${colorScheme}-400/20`
+                  } transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20`}
-                      style={{
-                        height: "40px",
-                        width: "40px",
-                      }}
-                      onClick={handleGoBack}
-                    >
-                      <RotateCcw
-                        className={`w-6 h-6 group-hover:scale-110 transition-transform`}
-                      />
-                    </button>
+                    style={{
+                      height: "40px",
+                      width: "40px",
+                    }}
+                    onClick={handleGoBack}
+                  >
+                    <RotateCcw
+                      className={`w-6 h-6 group-hover:scale-110 transition-transform`}
+                    />
+                  </button>
+
+                  {outputImage?.length ? (
+                    <>
+                      {" "}
+                      <button
+                        className={`right-0 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
+                  ${
+                    colorScheme === colorScheme
+                      ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
+                      : `bg-${colorScheme}-900/20 border-${colorScheme}-400/20`
+                  } transition-all duration-300 
+              border border-${colors.text}/20 hover:border-${colors.text}/50
+              shadow-lg shadow-${colors.glow}/20`}
+                        style={{
+                          height: "40px",
+                          width: "40px",
+                        }}
+                        onClick={handleShare}
+                        disabled={!outputImage}
+                      >
+                        <Share2
+                          className={`w-6 h-6 group-hover:scale-110 transition-transform`}
+                        />
+                      </button>
+                      <button
+                        className={`right-0 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
+                  ${
+                    colorScheme === colorScheme
+                      ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
+                      : `bg-${colorScheme}-900/20 border-${colorScheme}-400/20`
+                  } transition-all duration-300 
+              border border-${colors.text}/20 hover:border-${colors.text}/50
+              shadow-lg shadow-${colors.glow}/20`}
+                        style={{
+                          height: "40px",
+                          width: "40px",
+                        }}
+                        onClick={handleDownload}
+                        disabled={!outputImage}
+                      >
+                        <Download
+                          className={`w-6 h-6 group-hover:scale-110 transition-transform`}
+                        />
+                      </button>
+                    </>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -879,9 +930,13 @@ const MilitaryCameraInterface = () => {
               </label>
             </div> */}
             {/* testing div */}
-            {snapshot ? (
+            {snapshot && !outputImage?.length ? (
               <div className="container">
-                <div className={`switches-container ${colorScheme ? `bg-${colorScheme}-600` : "bg-gray-600"}`}>
+                <div
+                  className={`switches-container ${
+                    colorScheme ? `bg-${colorScheme}-600` : "bg-gray-600"
+                  }`}
+                >
                   <input
                     type="radio"
                     id="switchMonthly"
@@ -916,8 +971,9 @@ const MilitaryCameraInterface = () => {
                     disabled={isProcessing}
                     className={`
               relative group overflow-hidden
-              bg-${colors.primary}-900/10 hover:bg-${colors.primary
-                      }-800/20 text-${colors.text} p-6 
+              bg-${colors.primary}-900/10 hover:bg-${
+                      colors.primary
+                    }-800/20 text-${colors.text} p-6 
               rounded-xl backdrop-blur-md transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20
@@ -926,8 +982,9 @@ const MilitaryCameraInterface = () => {
                     style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
                   >
                     <Camera
-                      className={`w-8 h-8 group-hover:scale-110 transition-transform ${isProcessing ? "animate-pulse" : ""
-                        }`}
+                      className={`w-8 h-8 group-hover:scale-110 transition-transform ${
+                        isProcessing ? "animate-pulse" : ""
+                      }`}
                     />
                   </button>
                   <button
@@ -965,8 +1022,9 @@ const MilitaryCameraInterface = () => {
                       disabled={isProcessing}
                       className={`
               relative group overflow-hidden
-              bg-${colors.primary}-900/10 hover:bg-${colors.primary
-                        }-800/20 text-${colors.text} p-6 
+              bg-${colors.primary}-900/10 hover:bg-${
+                        colors.primary
+                      }-800/20 text-${colors.text} p-6 
               rounded-xl backdrop-blur-md transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20
@@ -975,65 +1033,13 @@ const MilitaryCameraInterface = () => {
                       style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
                     >
                       <SwitchCamera
-                        className={`w-8 h-8 group-hover:scale-110 transition-transform ${isProcessing ? "animate-pulse" : ""
-                          }`}
+                        className={`w-8 h-8 group-hover:scale-110 transition-transform ${
+                          isProcessing ? "animate-pulse" : ""
+                        }`}
                       />
                     </button>
                   ) : null}
                 </>
-              ) : outputImage?.length ? (
-                <div
-                  className="mt-10"
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    marginRight: "20px",
-                    marginLeft: "20px",
-                    alignItems: "center",
-                    gap: "20px",
-                  }}
-                >
-                  <button
-                    className={`
-                btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-                bg-${colorScheme}-600 text-white
-                hover:bg-${colorScheme}-700
-                focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-                disabled:bg-gray-400 disabled:cursor-not-allowed
-                w-32
-              `}
-                    onClick={handleShare}
-                    disabled={!outputImage}
-                  >
-                    Share
-                  </button>
-                  <button
-                    className={`
-                btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-                bg-${colorScheme}-600 text-white
-                hover:bg-${colorScheme}-700
-                focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-                disabled:bg-gray-400 disabled:cursor-not-allowed
-                 w-32
-              `}
-                    onClick={handleDownload}
-                    disabled={!outputImage}
-                  >
-                    Download
-                  </button>
-                  <button
-                    className={`
-               btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-               bg-${colorScheme}-600 text-white
-               hover:bg-${colorScheme}-700
-               focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-               disabled:bg-gray-400 disabled:cursor-not-allowed
-             `}
-                    onClick={resetState}
-                  >
-                    Recapture
-                  </button>
-                </div>
               ) : (
                 <>
                   {/* {prompts.map((prompt, index) => (
@@ -1055,7 +1061,7 @@ const MilitaryCameraInterface = () => {
                     {prompt}
                   </button>
                 ))} */}
-                  <PromptSlider
+                 {!outputImage?.length ?  <PromptSlider
                     colorScheme={colorScheme}
                     colors={colors}
                     handlePromptChange={handlePromptChange}
@@ -1063,7 +1069,7 @@ const MilitaryCameraInterface = () => {
                     prompts={prompts}
                     selectedPrompt={selectedPrompt}
                     stopButtonPress={stopButtonPress}
-                  />
+                  /> : null}
                 </>
               )}
             </div>

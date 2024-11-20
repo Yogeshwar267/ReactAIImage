@@ -72,7 +72,7 @@ const PromptSlider = ({
                     stopButtonPress();
                   }}
                 >
-                  {prompt}
+                  {index+1}
                 </button>
               </div>
             ))

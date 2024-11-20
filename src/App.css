@@ -203,6 +203,10 @@ body {
   font-size: 30px !important;
 }
 
+.custom-button-spacing {
+  padding:10px 37px;
+}
+
 @media only screen and (max-width:1680px) {
   .switches-container label {
     font-size: 14px;
