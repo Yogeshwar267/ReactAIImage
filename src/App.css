@@ -221,3 +221,35 @@ body {
     width: 16rem
   }
 }
+
+@media only screen and (max-width:767px) {
+  .custom-theme-position {
+    left: auto;
+    margin: 0px;
+    top: 8rem;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .custom-theme-position>button {
+    margin: 0px !important;
+    width: 100% !important;
+  }
+
+  .custom-footer-spacing {
+    gap: 20px;
+  }
+
+  .custom-footer-spacing>button {
+    margin: 0px !important;
+    padding: 15px;
+  }
+}
+
+@media only screen and (max-width:580px) {
+  .custom-footer-spacing>button>svg {
+    width: 25px;
+    height: 25px;
+  }
+}

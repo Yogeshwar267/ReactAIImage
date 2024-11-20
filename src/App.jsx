@@ -734,7 +734,8 @@ const MilitaryCameraInterface = () => {
         >
           {/* Color scheme switcher */}
           {!outputImage?.length && !snapshot ? (
-            <div className="absolute top-14 right-4 flex space-x-2 z-50 right-0 left-0 w-max mx-auto justify-center bg-black/40 p-4 rounded-lg">
+            <div className="absolute top-14 right-4 flex space-x-2 z-50 right-0 left-0 w-max mx-auto justify-center bg-black/40 p-4 rounded-lg custom-theme-position">
+              
               {Object.keys(colorSchemes).map((scheme) => {
                 return (
                   <button
@@ -962,7 +963,7 @@ const MilitaryCameraInterface = () => {
               </div>
             ) : null}
             {/* testing div */}
-            <div className="flex justify-center items-center space-x-8">
+            <div className="flex justify-center items-center space-x-8 custom-footer-spacing">
               {!snapshot ? (
                 <>
                   {" "}
