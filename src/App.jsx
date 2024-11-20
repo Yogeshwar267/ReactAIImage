@@ -8,7 +8,12 @@ import {
   RotateCcw,
 } from "lucide-react";
 import "./App.css";
-import { AI_MODEL_TYPE, API_URL, negativeprompt, prompts } from "./shared/constants";
+import {
+  AI_MODEL_TYPE,
+  API_URL,
+  negativeprompt,
+  prompts,
+} from "./shared/constants";
 import { SOUND_FILES } from "./shared/sounds";
 import useSound from "use-sound";
 import PromptSlider from "./components/PromptSlider";
@@ -133,9 +138,7 @@ const MilitaryCameraInterface = () => {
   const [playButtonPress, { stopButtonPress }] = useSound(
     SOUND_FILES.buttonPress
   );
-  const [playCameraPress] = useSound(
-    SOUND_FILES.cameraPress
-  );
+  const [playCameraPress] = useSound(SOUND_FILES.cameraPress);
   const [playStartup] = useSound(SOUND_FILES.startup);
 
   useEffect(() => {
@@ -353,13 +356,10 @@ const MilitaryCameraInterface = () => {
     );
 
     try {
-      const response = await fetch(
-        `${API_URL}generate-image-from-external`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${API_URL}generate-image-from-external`, {
+        method: "POST",
+        body: formData,
+      });
 
       const data = await response.json();
 
@@ -387,9 +387,7 @@ const MilitaryCameraInterface = () => {
 
     const checkStatus = async () => {
       try {
-        const response = await fetch(
-          `${API_URL}check-status/${requestId}`
-        );
+        const response = await fetch(`${API_URL}check-status/${requestId}`);
 
         const contentType = response.headers.get("Content-Type");
 
@@ -512,36 +510,38 @@ const MilitaryCameraInterface = () => {
           className={`absolute inset-0 bg-gradient-to-b from-${colors.primary}-900/40 to-transparent z-10`}
         >
           {/* Color scheme switcher */}
-          <div className="absolute top-14 right-4 flex space-x-2 z-50">
-            {/* <button
+          {!outputImage?.length && !snapshot ? (
+            <div className="absolute top-14 right-4 flex space-x-2 z-50">
+              {/* <button
             className={`p-2 rounded-lg backdrop-blur-md border transition-all
                `}
             onClick={() => setIsFrontCamera((prev) => !prev)}
           >
             <SwitchCamera className={`w-4 h-4`} />
           </button> */}
-            {Object.keys(colorSchemes).map((scheme) => {
-              return (
-                <button
-                  key={scheme}
-                  onClick={() => {
-                    setColorScheme(scheme);
-                    playButtonPress();
-                  }}
-                  className={`p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
+              {Object.keys(colorSchemes).map((scheme) => {
+                return (
+                  <button
+                    key={scheme}
+                    onClick={() => {
+                      setColorScheme(scheme);
+                      playButtonPress();
+                    }}
+                    className={`p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
                 ${
                   colorScheme === scheme
                     ? `bg-${scheme}-900/50 border-${scheme}-400/50`
                     : `bg-${scheme}-900/20 border-${scheme}-400/20`
                 }`}
-                >
-                  <Monitor
-                    className={`w-4 h-4 text-${scheme}-400 group-hover:scale-150 transition-transform`}
-                  />
-                </button>
-              );
-            })}
-          </div>
+                  >
+                    <Monitor
+                      className={`w-4 h-4 text-${scheme}-400 group-hover:scale-150 transition-transform`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
 
           {/* DOS-style header */}
           <div
@@ -628,8 +628,9 @@ const MilitaryCameraInterface = () => {
                       </div>
                     </label>
                   </div>
-                {!outputImage?.length ?  <button
-                    className={`right-0 mr-2 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
+                  {!outputImage?.length ? (
+                    <button
+                      className={`right-0 mr-2 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
                   ${
                     colorScheme === colorScheme
                       ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
@@ -637,16 +638,17 @@ const MilitaryCameraInterface = () => {
                   } transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20`}
-                    style={{
-                      height: "40px",
-                      width: "40px",
-                    }}
-                    onClick={handleGoBack}
-                  >
-                    <RotateCcw 
-                      className={`w-6 h-6 group-hover:scale-110 transition-transform`}
-                    />
-                  </button> : null}
+                      style={{
+                        height: "40px",
+                        width: "40px",
+                      }}
+                      onClick={handleGoBack}
+                    >
+                      <RotateCcw
+                        className={`w-6 h-6 group-hover:scale-110 transition-transform`}
+                      />
+                    </button>
+                  ) : null}
                 </div>
               ) : null}
             </div>
