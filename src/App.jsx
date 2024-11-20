@@ -649,7 +649,7 @@ const MilitaryCameraInterface = () => {
           className={`absolute inset-0 bg-gradient-to-b from-${colors.primary}-900/40 to-transparent z-10`}
         >
           {/* Color scheme switcher */}
-          <div className="absolute top-14 right-4 flex space-x-2 z-50">
+          <div className={`backdrop-blur-md p-4 w-max min-w-28 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 absolute top-14 flex space-x-2 z-50 left-0 right-0 justify-center mx-auto`} style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
             {/* <button
             className={`p-2 rounded-lg backdrop-blur-md border transition-all
                `}
@@ -669,11 +669,10 @@ const MilitaryCameraInterface = () => {
                     }, 3000);
                   }}
                   className={`p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
-                ${
-                  colorScheme === scheme
-                    ? `bg-${scheme}-900/50 border-${scheme}-400/50`
-                    : `bg-${scheme}-900/20 border-${scheme}-400/20`
-                }`}
+                ${colorScheme === scheme
+                      ? `bg-${scheme}-900/50 border-${scheme}-400/50`
+                      : `bg-${scheme}-900/20 border-${scheme}-400/20`
+                    }`}
                 >
                   <Monitor
                     className={`w-4 h-4 text-${scheme}-400 group-hover:scale-150 transition-transform`}
@@ -745,14 +744,14 @@ const MilitaryCameraInterface = () => {
             </div>
             <div className="flex-row justify-items-end">
               <div
-                className={`backdrop-blur-md p-4 min-w-28 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 mt-12`}
+                className={`backdrop-blur-md p-4 min-w-28 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20`}
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
               >
                 {time.toLocaleTimeString()}
               </div>
               {snapshot ? (
                 <div className="flex-col gap-5 justify-items-end">
-                  <div className="my-5">
+                  {/* <div className="my-5">
                     <label class="relative inline-flex cursor-pointer items-center">
                       <input
                         type="checkbox"
@@ -767,14 +766,13 @@ const MilitaryCameraInterface = () => {
                         <span>Turbo</span>
                       </div>
                     </label>
-                  </div>
+                  </div> */}
                   <button
                     className={`right-0 mr-2 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
-                  ${
-                    colorScheme === colorScheme
-                      ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
-                      : `bg-${colorScheme}-900/20 border-${colorScheme}-400/20`
-                  } transition-all duration-300 
+                  ${colorScheme === colorScheme
+                        ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
+                        : `bg-${colorScheme}-900/20 border-${colorScheme}-400/20`
+                      } transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20`}
                     style={{
@@ -794,7 +792,7 @@ const MilitaryCameraInterface = () => {
 
           {/* Error Alert */}
           {error && (
-            <div className="absolute top-20 left-1/2 -translate-x-1/2 w-96">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 w-96">
               {error}
               {/* <Alert variant="destructive" className={`border-${colors.primary}-500/50 bg-${colors.bg}/20 backdrop-blur-md`}>
               <AlertCircle className="h-4 w-4" />
@@ -806,70 +804,51 @@ const MilitaryCameraInterface = () => {
           )}
 
           {/* Bottom controls */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 flex justify-center items-center space-x-8">
-            {!snapshot ? (
-              <>
-                {" "}
-                <button
-                  onClick={generateImage}
-                  disabled={isProcessing}
-                  className={`
-              relative group overflow-hidden
-              bg-${colors.primary}-900/10 hover:bg-${
-                    colors.primary
-                  }-800/20 text-${colors.text} p-6 
-              rounded-xl backdrop-blur-md transition-all duration-300 
-              border border-${colors.text}/20 hover:border-${colors.text}/50
-              shadow-lg shadow-${colors.glow}/20
-              ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}
-            `}
-                  style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
-                >
-                  <Camera
-                    className={`w-8 h-8 group-hover:scale-110 transition-transform ${
-                      isProcessing ? "animate-pulse" : ""
-                    }`}
-                  />
-                </button>
-                <button
-                  onClick={openFilePicker}
-                  className={`
-            relative group overflow-hidden
-            bg-${colors.primary}-900/10 hover:bg-${colors.primary}-800/20 text-${colors.text} p-6 
-            rounded-xl backdrop-blur-md transition-all duration-300 
-            border border-${colors.text}/20 hover:border-${colors.text}/50
-            shadow-lg shadow-${colors.glow}/20
-          `}
-                  style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
-                >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-r from-${colors.primary}-500/10 to-${colors.accent}-500/10 opacity-0 group-hover:opacity-100 transition-opacity`}
-                  />
-                  <Folder className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                </button>
+          <div className="absolute bottom-0 left-0 right-0 p-8">
+            <div className="my-5 flex justify-center">
+              <label class="relative inline-flex cursor-pointer items-center">
                 <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden-input"
-                  onChange={handleFileChange}
-                  style={{ display: "none" }}
+                  type="checkbox"
+                  checked={isTurboMode}
+                  onChange={handleToggle}
+                  class="peer sr-only"
                 />
-                {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
-                  navigator.userAgent
-                ) ? (
+                <div
+                  class={`peer flex h-8 items-center gap-4 rounded-full bg-${colorScheme}-600 px-3 after:absolute after:left-1 after: after:h-6 after:w-16 after:rounded-full after:bg-white/40 after:transition-all after:content-[''] peer-checked:bg-stone-600 peer-checked:after:translate-x-full peer-focus:outline-none dark:border-slate-600 dark:bg-slate-700 text-sm text-white`}
+                >
+                  <span>HQ</span>
+                  <span>Turbo</span>
+                </div>
+              </label>
+            </div>
+            {/* testing div */}
+            <div class="container">
+              <div class="switches-container">
+                <input type="radio" id="switchMonthly" name="switchPlan" value="Monthly" checked="checked" />
+                <input type="radio" id="switchYearly" name="switchPlan" value="Yearly" />
+                <label for="switchMonthly">HQ</label>
+                <label for="switchYearly">Turbo</label>
+                <div class="switch-wrapper">
+                  <div class="switch">
+                    <div>HQ</div>
+                    <div>Turbo</div>
+                  </div>
+                </div>
+              </div>
+              <p><small>NB: Input radios are used toggle the switch state.</small></p>
+            </div>
+            {/* testing div */}
+            <div className="flex justify-center items-center space-x-8">
+              {!snapshot ? (
+                <>
+                  {" "}
                   <button
-                    onClick={() => {
-                      playButtonPress();
-                      setIsFrontCamera((prev) => !prev);
-                      stopButtonPress();
-                    }}
+                    onClick={generateImage}
                     disabled={isProcessing}
                     className={`
               relative group overflow-hidden
-              bg-${colors.primary}-900/10 hover:bg-${
-                      colors.primary
-                    }-800/20 text-${colors.text} p-6 
+              bg-${colors.primary}-900/10 hover:bg-${colors.primary
+                      }-800/20 text-${colors.text} p-6 
               rounded-xl backdrop-blur-md transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20
@@ -877,28 +856,77 @@ const MilitaryCameraInterface = () => {
             `}
                     style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
                   >
-                    <SwitchCamera
-                      className={`w-8 h-8 group-hover:scale-110 transition-transform ${
-                        isProcessing ? "animate-pulse" : ""
-                      }`}
+                    <Camera
+                      className={`w-8 h-8 group-hover:scale-110 transition-transform ${isProcessing ? "animate-pulse" : ""
+                        }`}
                     />
                   </button>
-                ) : null}
-              </>
-            ) : outputImage?.length ? (
-              <div
-                className="mt-10"
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  marginRight: "20px",
-                  marginLeft: "20px",
-                  alignItems: "center",
-                  gap: "20px",
-                }}
-              >
-                <button
-                  className={`
+                  <button
+                    onClick={openFilePicker}
+                    className={`
+            relative group overflow-hidden
+            bg-${colors.primary}-900/10 hover:bg-${colors.primary}-800/20 text-${colors.text} p-6 
+            rounded-xl backdrop-blur-md transition-all duration-300 
+            border border-${colors.text}/20 hover:border-${colors.text}/50
+            shadow-lg shadow-${colors.glow}/20
+          `}
+                    style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+                  >
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-r from-${colors.primary}-500/10 to-${colors.accent}-500/10 opacity-0 group-hover:opacity-100 transition-opacity`}
+                    />
+                    <Folder className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden-input"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                  />
+                  {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
+                    navigator.userAgent
+                  ) ? (
+                    <button
+                      onClick={() => {
+                        playButtonPress();
+                        setIsFrontCamera((prev) => !prev);
+                        stopButtonPress();
+                      }}
+                      disabled={isProcessing}
+                      className={`
+              relative group overflow-hidden
+              bg-${colors.primary}-900/10 hover:bg-${colors.primary
+                        }-800/20 text-${colors.text} p-6 
+              rounded-xl backdrop-blur-md transition-all duration-300 
+              border border-${colors.text}/20 hover:border-${colors.text}/50
+              shadow-lg shadow-${colors.glow}/20
+              ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}
+            `}
+                      style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+                    >
+                      <SwitchCamera
+                        className={`w-8 h-8 group-hover:scale-110 transition-transform ${isProcessing ? "animate-pulse" : ""
+                          }`}
+                      />
+                    </button>
+                  ) : null}
+                </>
+              ) : outputImage?.length ? (
+                <div
+                  className="mt-10"
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginRight: "20px",
+                    marginLeft: "20px",
+                    alignItems: "center",
+                    gap: "20px",
+                  }}
+                >
+                  <button
+                    className={`
                 btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
                 bg-${colorScheme}-600 text-white
                 hover:bg-${colorScheme}-700
@@ -906,13 +934,13 @@ const MilitaryCameraInterface = () => {
                 disabled:bg-gray-400 disabled:cursor-not-allowed
                 w-32
               `}
-                  onClick={handleShare}
-                  disabled={!outputImage}
-                >
-                  Share
-                </button>
-                <button
-                  className={`
+                    onClick={handleShare}
+                    disabled={!outputImage}
+                  >
+                    Share
+                  </button>
+                  <button
+                    className={`
                 btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
                 bg-${colorScheme}-600 text-white
                 hover:bg-${colorScheme}-700
@@ -920,27 +948,27 @@ const MilitaryCameraInterface = () => {
                 disabled:bg-gray-400 disabled:cursor-not-allowed
                  w-32
               `}
-                  onClick={handleDownload}
-                  disabled={!outputImage}
-                >
-                  Download
-                </button>
-                <button
-                  className={`
+                    onClick={handleDownload}
+                    disabled={!outputImage}
+                  >
+                    Download
+                  </button>
+                  <button
+                    className={`
                btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
                bg-${colorScheme}-600 text-white
                hover:bg-${colorScheme}-700
                focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
                disabled:bg-gray-400 disabled:cursor-not-allowed
              `}
-                  onClick={resetState}
-                >
-                  Recapture
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* {prompts.map((prompt, index) => (
+                    onClick={resetState}
+                  >
+                    Recapture
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* {prompts.map((prompt, index) => (
                   <button
                     className={`backdrop-blur-md p-4 min-w-28 rounded-md border border-2 border-${
                       colors.text
@@ -959,17 +987,18 @@ const MilitaryCameraInterface = () => {
                     {prompt}
                   </button>
                 ))} */}
-                <PromptSlider
-                  colorScheme={colorScheme}
-                  colors={colors}
-                  handlePromptChange={handlePromptChange}
-                  playButtonPress={playButtonPress}
-                  prompts={prompts}
-                  selectedPrompt={selectedPrompt}
-                  stopButtonPress={stopButtonPress}
-                />
-              </>
-            )}
+                  <PromptSlider
+                    colorScheme={colorScheme}
+                    colors={colors}
+                    handlePromptChange={handlePromptChange}
+                    playButtonPress={playButtonPress}
+                    prompts={prompts}
+                    selectedPrompt={selectedPrompt}
+                    stopButtonPress={stopButtonPress}
+                  />
+                </>
+              )}
+            </div>
           </div>
 
           {/* Corner brackets */}
@@ -1020,15 +1049,15 @@ const MilitaryCameraInterface = () => {
               className={`rounded-lg w-full max-w-full h-screen 
             bg-gradient-to-br from-${colorScheme}-500 to-black`}
 
-              // style={{
-              //   border: `2px solid ${colorScheme}`,
-              //   borderRadius: "8px",
-              //   marginBottom: "20px",
-              //   width: "100%",
-              //   maxWidth: "100vw",
-              //   height: "100vh",
-              //   backgroundImage: `linear-gradient(145deg, ${colorScheme}, ${"black"})`,
-              // }}
+            // style={{
+            //   border: `2px solid ${colorScheme}`,
+            //   borderRadius: "8px",
+            //   marginBottom: "20px",
+            //   width: "100%",
+            //   maxWidth: "100vw",
+            //   height: "100vh",
+            //   backgroundImage: `linear-gradient(145deg, ${colorScheme}, ${"black"})`,
+            // }}
             ></video>
           )}
           <canvas ref={canvasRef} style={styles.canvas}></canvas>
