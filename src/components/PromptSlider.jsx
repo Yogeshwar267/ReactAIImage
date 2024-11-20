@@ -7,9 +7,9 @@ import Slider from "react-slick";
 const PromptSlider = ({
   prompts,
   selectedPrompt,
-  handlePromptChange,
-  playButtonPress,
-  stopButtonPress,
+  handlePromptChange = () => {},
+  playButtonPress = () => {},
+  stopButtonPress = () => {},
   colors,
   colorScheme,
 }) => {

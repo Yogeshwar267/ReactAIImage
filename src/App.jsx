@@ -14,7 +14,7 @@ import {
 // import { Alert, AlertDescription } from '@/components/ui/alert';
 import "./App.css";
 import PromptSelection from "./components/PromptSelection";
-import { negativeprompt, prompts } from "./shared/constants";
+import { AI_MODEL_TYPE, negativeprompt, prompts } from "./shared/constants";
 import { SOUND_FILES } from "./shared/sounds";
 import useSound from "use-sound";
 import PromptSlider from "./components/PromptSlider";
@@ -130,10 +130,11 @@ const MilitaryCameraInterface = () => {
   const [selectedPrompt, setSelectedPrompt] = useState("");
   const [location, setLocation] = useState({ latitude: null, longitude: null });
   const [outputImage, setOutputImage] = useState(null);
+  const [resonseId, setResponseId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [imageError, setImageError] = useState("");
   const [isFrontCamera, setIsFrontCamera] = useState(true);
-  const [isTurboMode, setIsTurboMode] = useState(false);
+  const [isBasicMode, setIsBasicMode] = useState(true);
 
   const [playButtonPress, { stopButtonPress }] = useSound(
     SOUND_FILES.buttonPress
@@ -154,7 +155,7 @@ const MilitaryCameraInterface = () => {
 
   // Handler function for toggle change
   const handleToggle = () => {
-    setIsTurboMode((prevState) => !prevState);
+    setIsBasicMode((prevState) => !prevState);
   };
 
   const [locationError, setLocationError] = useState(null);
@@ -171,8 +172,6 @@ const MilitaryCameraInterface = () => {
     setOutputImage(null); // Clear output image
     setLoading(false); // Reset loading state
     setImageError(""); // Clear image error
-    stopButtonPress();
-    stopStartup();
   };
 
   useEffect(() => {
@@ -308,8 +307,6 @@ const MilitaryCameraInterface = () => {
       const imageDataUrl = canvas.toDataURL("image/png");
       setSnapshot(imageDataUrl);
     }
-    stopCameraPress();
-    stopStartup();
   };
 
   // Trigger file input click
@@ -318,8 +315,6 @@ const MilitaryCameraInterface = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-    stopButtonPress();
-    stopStartup();
   };
 
   // Handle file selection
@@ -340,18 +335,13 @@ const MilitaryCameraInterface = () => {
   const handlePromptChange = (e) => {
     setSelectedPrompt(e.target.value);
     outputImage?.length ? setOutputImage(null) : null;
-    handleSubmit(e.target.value);
+    handleSubmitRequest(e.target.value);
   };
-
-  console.log(selectedPrompt, "text SELECTED PROMT");
 
   const handleGoBack = () => {
     resetState();
     setSnapshot("");
     playButtonPress();
-    setTimeout(() => {
-      stopButtonPress();
-    }, 3000);
   };
 
   const handleDownload = () => {
@@ -366,7 +356,6 @@ const MilitaryCameraInterface = () => {
 
     // Cleanup
     document.body.removeChild(link);
-    stopButtonPress();
   };
 
   const handleShare = async () => {
@@ -395,7 +384,6 @@ const MilitaryCameraInterface = () => {
     } else {
       alert("Sharing is not supported in this browser.");
     }
-    stopButtonPress();
   };
 
   const handleSubmit = async (prompt) => {
@@ -450,6 +438,97 @@ const MilitaryCameraInterface = () => {
       setLoading(false);
       setImageError("Something went wrong. Please retry");
     }
+  };
+
+  const handleSubmitRequest = async (prompt) => {
+    setLoading(true);
+
+    const contentType = "image/png"; // Specify the MIME type
+    const imageBlob = base64ToBlob(snapshot, contentType);
+
+    const formData = new FormData();
+    formData.append("prompt", prompt || selectedPrompt);
+    formData.append("image", imageBlob);
+    formData.append("negative_prompt", negativeprompt);
+    formData.append("cgf_scale", 4.5);
+    formData.append("controlnet_type", "depth");
+    formData.append("controlnet_weight", 0.55);
+    formData.append("model_name", isBasicMode ? AI_MODEL_TYPE.TURBO : AI_MODEL_TYPE.HQ);
+
+    try {
+      const response = await fetch(
+        "http://3.210.112.3:5002/generate-image-from-external",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const requestId = data?.request_id;
+        if (requestId) {
+          pollStatus(requestId); // Start polling
+        } else {
+          throw new Error("Request ID is missing from the response");
+        }
+      } else {
+        setLoading(false);
+        setImageError(response.statusText);
+      }
+    } catch (error) {
+      setLoading(false);
+      setImageError("Something went wrong. Please retry");
+    }
+  };
+
+  const pollStatus = async (requestId) => {
+    const pollInterval = 5000; // 5 seconds
+    const maxRetries = 20; // Adjust based on timeout needs
+    let retries = 0;
+
+    const checkStatus = async () => {
+      try {
+        const response = await fetch(
+          `http://3.210.112.3:5002/check-status/${requestId}`
+        );
+
+        const contentType = response.headers.get("Content-Type");
+
+        if (contentType.includes("application/json")) {
+          const data = await response.json();
+
+          if (data.status === "processing") {
+            console.log("Image is still processing...");
+            if (retries < maxRetries) {
+              retries++;
+              setTimeout(checkStatus, pollInterval);
+            } else {
+              setLoading(false);
+              setImageError("Image generation timed out. Please retry.");
+            }
+          } else {
+            throw new Error("Unexpected status in JSON response");
+          }
+        } else if (contentType.includes("image/png")) {
+          // Image is ready, read it as a blob
+          const imageBlob = await response.blob();
+          const imageUrl = URL.createObjectURL(imageBlob); // Create a temporary URL for the image
+          console.log("Image generated successfully:", imageUrl);
+          setOutputImage(imageUrl); // Update your state with the generated image URL
+          setLoading(false);
+        } else {
+          throw new Error("Unexpected Content-Type");
+        }
+      } catch (error) {
+        console.error("Error while checking status:", error);
+        setLoading(false);
+        setImageError("Something went wrong. Please retry.");
+      }
+    };
+
+    checkStatus(); // Start the first check
   };
 
   const textClass = `text-${colorScheme}-100`;
@@ -664,9 +743,6 @@ const MilitaryCameraInterface = () => {
                   onClick={() => {
                     setColorScheme(scheme);
                     playButtonPress();
-                    setTimeout(() => {
-                      stopButtonPress();
-                    }, 3000);
                   }}
                   className={`p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
                 ${colorScheme === scheme
@@ -755,15 +831,15 @@ const MilitaryCameraInterface = () => {
                     <label class="relative inline-flex cursor-pointer items-center">
                       <input
                         type="checkbox"
-                        checked={isTurboMode}
+                        checked={isBasicMode}
                         onChange={handleToggle}
                         class="peer sr-only"
                       />
                       <div
                         class={`peer flex h-8 items-center gap-4 rounded-full bg-${colorScheme}-600 px-3 after:absolute after:left-1 after: after:h-6 after:w-16 after:rounded-full after:bg-white/40 after:transition-all after:content-[''] peer-checked:bg-stone-600 peer-checked:after:translate-x-full peer-focus:outline-none dark:border-slate-600 dark:bg-slate-700 text-sm text-white`}
                       >
-                        <span>HQ</span>
                         <span>Turbo</span>
+                        <span>HQ</span>
                       </div>
                     </label>
                   </div> */}
@@ -870,32 +946,31 @@ const MilitaryCameraInterface = () => {
             border border-${colors.text}/20 hover:border-${colors.text}/50
             shadow-lg shadow-${colors.glow}/20
           `}
-                    style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
-                  >
-                    <div
-                      className={`absolute inset-0 bg-gradient-to-r from-${colors.primary}-500/10 to-${colors.accent}-500/10 opacity-0 group-hover:opacity-100 transition-opacity`}
-                    />
-                    <Folder className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden-input"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
+                  style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+                >
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-r from-${colors.primary}-500/10 to-${colors.accent}-500/10 opacity-0 group-hover:opacity-100 transition-opacity`}
                   />
-                  {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
-                    navigator.userAgent
-                  ) ? (
-                    <button
-                      onClick={() => {
-                        playButtonPress();
-                        setIsFrontCamera((prev) => !prev);
-                        stopButtonPress();
-                      }}
-                      disabled={isProcessing}
-                      className={`
+                  <Folder className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden-input"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+                {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
+                  navigator.userAgent
+                ) ? (
+                  <button
+                    onClick={() => {
+                      playButtonPress();
+                      setIsFrontCamera((prev) => !prev);
+                    }}
+                    disabled={isProcessing}
+                    className={`
               relative group overflow-hidden
               bg-${colors.primary}-900/10 hover:bg-${colors.primary
                         }-800/20 text-${colors.text} p-6 
