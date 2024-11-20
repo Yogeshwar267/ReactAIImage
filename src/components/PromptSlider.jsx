@@ -7,9 +7,9 @@ import Slider from "react-slick";
 const PromptSlider = ({
   prompts,
   selectedPrompt,
-  handlePromptChange = () => {},
-  playButtonPress = () => {},
-  stopButtonPress = () => {},
+  handlePromptChange,
+  playButtonPress,
+  stopButtonPress,
   colors,
   colorScheme,
 }) => {
@@ -58,9 +58,9 @@ const PromptSlider = ({
           ? prompts.map((prompt, index) => (
               <div key={index} className="flex-shrink-0 w-full">
                 <button
-                  className={`backdrop-blur-md p-5 rounded-md border border-2 min-h-28 w-96 border-${
+                  className={`backdrop-blur-md w-full p-5 rounded-md border border-2 min-h-28 w-96 border-${
                     colors.text
-                  }/10 shadow-lg shadow-${colors.glow}/20 my-12  ${
+                  }/10 shadow-lg shadow-${colors.glow}/20  ${
                     selectedPrompt === prompt
                       ? `text-${colors.text} border-${colors.text}/30`
                       : `border-${colors.inactiveText}/20`

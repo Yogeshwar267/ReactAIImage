@@ -818,7 +818,7 @@ const MilitaryCameraInterface = () => {
                 </div>
               </div>
             </div>
-            <div className="flex-row justify-items-end">
+            <div className="flex gap-2.5 items-center">
               <div
                 className={`backdrop-blur-md p-4 min-w-28 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20`}
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
@@ -844,7 +844,7 @@ const MilitaryCameraInterface = () => {
                     </label>
                   </div> */}
                   <button
-                    className={`right-0 mr-2 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
+                    className={`right-0 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
                   ${colorScheme === colorScheme
                         ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
                         : `bg-${colorScheme}-900/20 border-${colorScheme}-400/20`
@@ -868,7 +868,7 @@ const MilitaryCameraInterface = () => {
 
           {/* Error Alert */}
           {error && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 w-96">
+            <div className="absolute top-5 left-1/2 -translate-x-1/2 w-96">
               {error}
               {/* <Alert variant="destructive" className={`border-${colors.primary}-500/50 bg-${colors.bg}/20 backdrop-blur-md`}>
               <AlertCircle className="h-4 w-4" />
@@ -881,11 +881,11 @@ const MilitaryCameraInterface = () => {
 
           {/* Bottom controls */}
           <div className="absolute bottom-0 left-0 right-0 p-8">
-            <div className="my-5 flex justify-center">
+            {/* <div className="my-5 flex justify-center">
               <label class="relative inline-flex cursor-pointer items-center">
                 <input
                   type="checkbox"
-                  checked={isTurboMode}
+                  checked={isBasicMode}
                   onChange={handleToggle}
                   class="peer sr-only"
                 />
@@ -896,23 +896,35 @@ const MilitaryCameraInterface = () => {
                   <span>Turbo</span>
                 </div>
               </label>
-            </div>
+            </div> */}
             {/* testing div */}
-            <div class="container">
-              <div class="switches-container">
-                <input type="radio" id="switchMonthly" name="switchPlan" value="Monthly" checked="checked" />
-                <input type="radio" id="switchYearly" name="switchPlan" value="Yearly" />
-                <label for="switchMonthly">HQ</label>
-                <label for="switchYearly">Turbo</label>
-                <div class="switch-wrapper">
-                  <div class="switch">
-                    <div>HQ</div>
-                    <div>Turbo</div>
+            {snapshot ? (
+              <div className="container">
+                <div className={`switches-container ${colorScheme ? `bg-${colorScheme}-600` : "bg-gray-600"}`}>
+                  <input
+                    type="radio"
+                    id="switchMonthly"
+                    name="switchPlan"
+                    value="Monthly"
+                    defaultChecked={true} // Default selected state
+                  />
+                  <input
+                    type="radio"
+                    id="switchYearly"
+                    name="switchPlan"
+                    value="Yearly"
+                  />
+                  <label htmlFor="switchMonthly">HQ</label>
+                  <label htmlFor="switchYearly">Turbo</label>
+                  <div className="switch-wrapper">
+                    <div className="switch">
+                      <div>HQ</div>
+                      <div>Turbo</div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <p><small>NB: Input radios are used toggle the switch state.</small></p>
-            </div>
+            ) : null}
             {/* testing div */}
             <div className="flex justify-center items-center space-x-8">
               {!snapshot ? (
@@ -946,31 +958,31 @@ const MilitaryCameraInterface = () => {
             border border-${colors.text}/20 hover:border-${colors.text}/50
             shadow-lg shadow-${colors.glow}/20
           `}
-                  style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
-                >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-r from-${colors.primary}-500/10 to-${colors.accent}-500/10 opacity-0 group-hover:opacity-100 transition-opacity`}
+                    style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+                  >
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-r from-${colors.primary}-500/10 to-${colors.accent}-500/10 opacity-0 group-hover:opacity-100 transition-opacity`}
+                    />
+                    <Folder className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden-input"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
                   />
-                  <Folder className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden-input"
-                  onChange={handleFileChange}
-                  style={{ display: "none" }}
-                />
-                {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
-                  navigator.userAgent
-                ) ? (
-                  <button
-                    onClick={() => {
-                      playButtonPress();
-                      setIsFrontCamera((prev) => !prev);
-                    }}
-                    disabled={isProcessing}
-                    className={`
+                  {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
+                    navigator.userAgent
+                  ) ? (
+                    <button
+                      onClick={() => {
+                        playButtonPress();
+                        setIsFrontCamera((prev) => !prev);
+                      }}
+                      disabled={isProcessing}
+                      className={`
               relative group overflow-hidden
               bg-${colors.primary}-900/10 hover:bg-${colors.primary
                         }-800/20 text-${colors.text} p-6 
