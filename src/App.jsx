@@ -16,7 +16,12 @@ import {
 // import { Alert, AlertDescription } from '@/components/ui/alert';
 import "./App.css";
 import PromptSelection from "./components/PromptSelection";
-import { AI_MODEL_TYPE, API_URL, negativeprompt, prompts } from "./shared/constants";
+import {
+  AI_MODEL_TYPE,
+  API_URL,
+  negativeprompt,
+  prompts,
+} from "./shared/constants";
 import { SOUND_FILES } from "./shared/sounds";
 import useSound from "use-sound";
 import PromptSlider from "./components/PromptSlider";
@@ -129,7 +134,7 @@ const MilitaryCameraInterface = () => {
   const [snapshot, setSnapshot] = useState(null);
   const [stream, setStream] = useState(null);
   const fileInputRef = useRef(null);
-  const [selectedPrompt, setSelectedPrompt] = useState("");
+  const [selectedPrompt, setSelectedPrompt] = useState(prompts[0]);
   const [location, setLocation] = useState({ latitude: null, longitude: null });
   const [outputImage, setOutputImage] = useState(null);
   const [resonseId, setResponseId] = useState(null);
@@ -170,7 +175,7 @@ const MilitaryCameraInterface = () => {
     playButtonPress();
     setError(null); // Clear error
     setSnapshot(null); // Clear snapshot
-    setSelectedPrompt(""); // Clear prompt
+    setSelectedPrompt(prompts[0]); // Clear prompt
     setOutputImage(null); // Clear output image
     setLoading(false); // Reset loading state
     setImageError(""); // Clear image error
@@ -248,6 +253,12 @@ const MilitaryCameraInterface = () => {
       setIsProcessing(false);
     }
   };
+
+  useEffect(() => {
+    if (snapshot) {
+      handleSubmitRequest(selectedPrompt);
+    }
+  }, [snapshot]);
 
   // Function to start the camera stream
   const startCameraStream = async (retries = 3) => {
@@ -337,7 +348,6 @@ const MilitaryCameraInterface = () => {
   const handlePromptChange = (e) => {
     setSelectedPrompt(e.target.value);
     outputImage?.length ? setOutputImage(null) : null;
-    handleSubmitRequest(e.target.value);
   };
 
   const handleGoBack = () => {
@@ -407,13 +417,10 @@ const MilitaryCameraInterface = () => {
     );
 
     try {
-      const response = await fetch(
-        `${API_URL}generate-image-from-external`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${API_URL}generate-image-from-external`, {
+        method: "POST",
+        body: formData,
+      });
 
       const data = await response.json();
 
@@ -441,9 +448,7 @@ const MilitaryCameraInterface = () => {
 
     const checkStatus = async () => {
       try {
-        const response = await fetch(
-          `${API_URL}check-status/${requestId}`
-        );
+        const response = await fetch(`${API_URL}check-status/${requestId}`);
 
         const contentType = response.headers.get("Content-Type");
 
@@ -483,6 +488,8 @@ const MilitaryCameraInterface = () => {
   };
 
   const textClass = `text-${colorScheme}-100`;
+
+  console.log(outputImage , !snapshot?.length,"outputImageoutputImage")
 
   // Start the camera stream when the component mounts
   useEffect(() => {
@@ -647,7 +654,7 @@ const MilitaryCameraInterface = () => {
       {loading ? (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center flex-col">
           <div className="text-white text-lg">Please wait...</div>
-          <button
+          {/* <button
             className={` mt-4 px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all`}
             onClick={() => {
               setLoading(false);
@@ -655,7 +662,7 @@ const MilitaryCameraInterface = () => {
             }}
           >
             Cancel
-          </button>
+          </button> */}
         </div>
       ) : null}
       <div
@@ -681,7 +688,6 @@ const MilitaryCameraInterface = () => {
           {/* Color scheme switcher */}
           {!outputImage?.length && !snapshot ? (
             <div className="absolute top-14 right-4 flex space-x-2 z-50 right-0 left-0 w-max mx-auto justify-center bg-black/40 p-4 rounded-lg custom-theme-position">
-              
               {Object.keys(colorSchemes).map((scheme) => {
                 return (
                   <button
@@ -773,6 +779,43 @@ const MilitaryCameraInterface = () => {
               >
                 {time.toLocaleTimeString()}
               </div>
+              {/* {!snapshot && !outputImage?.length ? ( */}
+                <div>
+                  <div
+                    className={`switches-container ${
+                      colorScheme ? `bg-${colorScheme}-500/40` : "bg-gray-600"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      id="switchMonthly"
+                      name="switchPlan"
+                      value="Monthly"
+                      disabled={outputImage?.length}
+                      defaultChecked={true} // Default selected state
+                    />
+                    <input
+                      type="radio"
+                      id="switchYearly"
+                      name="switchPlan"
+                      value="Yearly"
+                      disabled={outputImage?.length}
+
+                    />
+                    <label htmlFor="switchMonthly" style={{cursor : outputImage?.length ? 'none' : 'pointer'}}>HQ</label>
+                    <label htmlFor="switchYearly" style={{cursor : outputImage?.length ? 'none' : 'pointer'}}>Turbo</label>
+                    <div className="switch-wrapper">
+                      <div
+                        className="switch"
+                        style={{ color: colorScheme, fontWeight: 800 }}
+                      >
+                        <div>HQ</div>
+                        <div>Turbo</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {/* ) : null} */}
               {snapshot ? (
                 <div className="justify-items-end flex gap-2 items-center">
                   <button
@@ -859,60 +902,27 @@ const MilitaryCameraInterface = () => {
           )}
 
           {/* Bottom controls */}
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            {/* <div className="my-5 flex justify-center">
-              <label class="relative inline-flex cursor-pointer items-center">
-                <input
-                  type="checkbox"
-                  checked={isBasicMode}
-                  onChange={handleToggle}
-                  class="peer sr-only"
+          <div className="absolute bottom-0 left-0 right-0 p-8 pr-0 flex justify-between items-center w-92">
+            {/* {!outputImage?.length && !snapshot ? ( */}
+              <div className="space-x-2 w-max bg-black/40 p-4 rounded-lg">
+                <PromptSlider
+                  colorScheme={colorScheme}
+                  colors={colors}
+                  handlePromptChange={handlePromptChange}
+                  playButtonPress={playButtonPress}
+                  prompts={prompts}
+                  selectedPrompt={selectedPrompt}
+                  stopButtonPress={stopButtonPress}
+                  disabled={outputImage?.length}
                 />
-                <div
-                  class={`peer flex h-8 items-center gap-4 rounded-full bg-${colorScheme}-600 px-3 after:absolute after:left-1 after: after:h-6 after:w-16 after:rounded-full after:bg-white/40 after:transition-all after:content-[''] peer-checked:bg-stone-600 peer-checked:after:translate-x-full peer-focus:outline-none dark:border-slate-600 dark:bg-slate-700 text-sm text-white`}
-                >
-                  <span>HQ</span>
-                  <span>Turbo</span>
-                </div>
-              </label>
-            </div> */}
-            {/* testing div */}
-            {snapshot && !outputImage?.length ? (
-              <div className="container">
-                <div
-                  className={`switches-container ${
-                    colorScheme ? `bg-${colorScheme}-600` : "bg-gray-600"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    id="switchMonthly"
-                    name="switchPlan"
-                    value="Monthly"
-                    defaultChecked={true} // Default selected state
-                  />
-                  <input
-                    type="radio"
-                    id="switchYearly"
-                    name="switchPlan"
-                    value="Yearly"
-                  />
-                  <label htmlFor="switchMonthly">HQ</label>
-                  <label htmlFor="switchYearly">Turbo</label>
-                  <div className="switch-wrapper">
-                    <div className="switch" style={{ color: colorScheme }}>
-                      <div>HQ</div>
-                      <div>Turbo</div>
-                    </div>
-                  </div>
-                </div>
               </div>
-            ) : null}
+            {/* ) : null} */}
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 p-8 pr-0 flex items-center justify-center w-max mx-auto justify-center ">
             {/* testing div */}
             <div className="flex justify-center items-center space-x-8 custom-footer-spacing">
-              {!snapshot ? (
+              {!outputImage?.length && !snapshot?.length ? (
                 <>
-                  {" "}
                   <button
                     onClick={generateImage}
                     disabled={isProcessing}
@@ -987,38 +997,7 @@ const MilitaryCameraInterface = () => {
                     </button>
                   ) : null}
                 </>
-              ) : (
-                <>
-                  {/* {prompts.map((prompt, index) => (
-                  <button
-                    className={`backdrop-blur-md p-4 min-w-28 rounded-md border border-2 border-${
-                      colors.text
-                    }/10 shadow-lg shadow-${colors.glow}/20 mt-12  ${
-                      selectedPrompt === prompt
-                        ? `text-${colors.text} border-${colors.text}/30`
-                        : `border-${colors.inactiveText}/20`
-                    } hover:border-${colorScheme}-900 hover:bg-${colorScheme}-200 hover:scale-110 transition-transform`}
-                    style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-                    onClick={() => {
-                      playButtonPress();
-                      handlePromptChange({ target: { value: prompt } });
-                      stopButtonPress();
-                    }}
-                  >
-                    {prompt}
-                  </button>
-                ))} */}
-                 {!outputImage?.length ?  <PromptSlider
-                    colorScheme={colorScheme}
-                    colors={colors}
-                    handlePromptChange={handlePromptChange}
-                    playButtonPress={playButtonPress}
-                    prompts={prompts}
-                    selectedPrompt={selectedPrompt}
-                    stopButtonPress={stopButtonPress}
-                  /> : null}
-                </>
-              )}
+              ) : null}
             </div>
           </div>
 

@@ -113,7 +113,7 @@ body {
 }
 
 .switches-container {
-  width: 16rem;
+  width: 10rem;
   position: relative;
   display: flex;
   padding: 0;
@@ -150,7 +150,7 @@ body {
 
 .switch {
   border-radius: 3rem;
-  background: white;
+  background: rgba(0, 0, 0,0.7);
   height: 100%;
 }
 
@@ -187,11 +187,11 @@ body {
 }
 
 .slick-list {
-  margin: 0 -20px;
+  margin: 0 -10px;
 }
 
 .slick-slide {
-  margin: 0 20px;
+  margin: 0 5px;
 }
 
 .slick-prev, .slick-next {
@@ -218,7 +218,7 @@ body {
 
   .switches-container {
     line-height: 2.4rem;
-    width: 16rem
+    width: 10rem
   }
 }
 
