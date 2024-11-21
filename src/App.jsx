@@ -740,7 +740,7 @@ const MilitaryCameraInterface = () => {
           <div className="absolute top-10 left-0 right-0 p-4 font-mono text-sm flex justify-between items-start">
             <div className="space-y-2">
               <div
-                className={`backdrop-blur-md p-4 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 border-r`}
+                className={`backdrop-blur-md p-4 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 border-r sm_font_12`}
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
               >
                 <div className={`text-${colors.text}`}>█ SYSTEM STATUS</div>

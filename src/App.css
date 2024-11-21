@@ -262,4 +262,16 @@ body {
     flex-direction: column;
   }
 
+  .switches-container label, .switch div, .custom-button-spacing, .sm_font_12 {
+    font-size: 12px;
+  }
+
+  .switches-container {
+    line-height: 2.4rem;
+    width: 8rem;
+  }
+
+  .custom-footer-spacing {
+    gap: 9px;
+  }
 }
