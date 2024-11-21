@@ -16,7 +16,7 @@ import {
 // import { Alert, AlertDescription } from '@/components/ui/alert';
 import "./App.css";
 import PromptSelection from "./components/PromptSelection";
-import { AI_MODEL_TYPE, negativeprompt, prompts } from "./shared/constants";
+import { AI_MODEL_TYPE, API_URL, negativeprompt, prompts } from "./shared/constants";
 import { SOUND_FILES } from "./shared/sounds";
 import useSound from "use-sound";
 import PromptSlider from "./components/PromptSlider";
@@ -388,60 +388,6 @@ const MilitaryCameraInterface = () => {
     }
   };
 
-  const handleSubmit = async (prompt) => {
-    setLoading(true);
-    const contentType = "image/png"; // Specify the MIME type
-    const imageBlob = base64ToBlob(snapshot, contentType);
-
-    const formData = new FormData();
-    formData.append("prompt", prompt || selectedPrompt); // Ensure selectedPrompt is defined
-    formData.append("image", imageBlob); // Ensure snapshot is a valid file object
-    formData.append("negative_prompt", negativeprompt); // Ensure snapshot is a valid file object
-    formData.append("cgf_scale", 4.5); // Ensure snapshot is a valid file object
-    formData.append("controlnet_type", "depth"); // Ensure snapshot is a valid file object
-    formData.append("controlnet_weight", 0.55); // Ensure snapshot is a valid file object
-
-    try {
-      const response = await fetch("http://3.210.112.3:5002/generate-image", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok && response.body) {
-        // Handle the readable stream from the response
-        const reader = response.body.getReader();
-        const chunks = [];
-        let done = false;
-
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          if (value) chunks.push(value);
-          done = streamDone;
-        }
-
-        // Combine chunks into a single Blob
-        const blob = new Blob(chunks);
-
-        // Create an Object URL for the Blob
-        const imageUrl = URL.createObjectURL(blob);
-        setLoading(false);
-        setOutputImage(imageUrl);
-        // Display the image (example: dynamically add an image element)
-        // const imgElement = document.createElement("img");
-        // imgElement.src = imageUrl;
-        // imgElement.alt = "Generated Image";
-        // document.body.appendChild(imgElement); // Append to the DOM
-      } else {
-        setLoading(false);
-        setImageError(response.statusText);
-        console.error("Error generating image:", response.statusText);
-      }
-    } catch (error) {
-      setLoading(false);
-      setImageError("Something went wrong. Please retry");
-    }
-  };
-
   const handleSubmitRequest = async (prompt) => {
     setLoading(true);
 
@@ -462,7 +408,7 @@ const MilitaryCameraInterface = () => {
 
     try {
       const response = await fetch(
-        "http://3.210.112.3:5002/generate-image-from-external",
+        `${API_URL}generate-image-from-external`,
         {
           method: "POST",
           body: formData,
@@ -496,7 +442,7 @@ const MilitaryCameraInterface = () => {
     const checkStatus = async () => {
       try {
         const response = await fetch(
-          `http://3.210.112.3:5002/check-status/${requestId}`
+          `${API_URL}check-status/${requestId}`
         );
 
         const contentType = response.headers.get("Content-Type");
