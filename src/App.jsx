@@ -487,9 +487,6 @@ const MilitaryCameraInterface = () => {
     checkStatus(); // Start the first check
   };
 
-  const textClass = `text-${colorScheme}-100`;
-
-  console.log(outputImage , !snapshot?.length,"outputImageoutputImage")
 
   // Start the camera stream when the component mounts
   useEffect(() => {
