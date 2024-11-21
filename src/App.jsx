@@ -443,7 +443,7 @@ const MilitaryCameraInterface = () => {
 
   const pollStatus = async (requestId) => {
     const pollInterval = 5000; // 5 seconds
-    const maxRetries = 20; // Adjust based on timeout needs
+    const maxRetries = isBasicMode ? 100 : 300; // Adjust based on timeout needs
     let retries = 0;
 
     const checkStatus = async () => {
