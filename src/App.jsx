@@ -897,7 +897,7 @@ const MilitaryCameraInterface = () => {
 
           {/* Error Alert */}
           {error && (
-            <div className="absolute top-5 left-1/2 -translate-x-1/2 w-96">
+            <div className="top-[29px] left-0 right-0 transform-none w-full text-center">
               {error}
               {/* <Alert variant="destructive" className={`border-${colors.primary}-500/50 bg-${colors.bg}/20 backdrop-blur-md`}>
               <AlertCircle className="h-4 w-4" />
@@ -909,9 +909,9 @@ const MilitaryCameraInterface = () => {
           )}
 
           {/* Bottom controls */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 pr-0 flex justify-between items-center w-92">
+          <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-between items-center w-92 custom-num-spacing-container">
             {/* {!outputImage?.length && !snapshot ? ( */}
-            <div className="space-x-2 w-max bg-black/40 p-4 rounded-lg">
+            <div className="space-x-2 w-max bg-black/40 p-2 rounded-lg sm-custom-padding">
               <PromptSlider
                 colorScheme={colorScheme}
                 colors={colors}
@@ -925,7 +925,7 @@ const MilitaryCameraInterface = () => {
             </div>
             {/* ) : null} */}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-8 pr-0 flex items-center justify-center w-max mx-auto justify-center ">
+          <div className="absolute bottom-0 left-0 right-0 p-4 pr-0 flex items-center justify-center w-max mx-auto justify-center ">
             {/* testing div */}
             <div className="flex justify-center items-center space-x-8 custom-footer-spacing">
               {!outputImage?.length && !snapshot?.length ? (
@@ -937,7 +937,7 @@ const MilitaryCameraInterface = () => {
               relative group overflow-hidden
               bg-${colors.primary}-900/10 hover:bg-${
                       colors.primary
-                    }-800/20 text-${colors.text} p-6 
+                    }-800/20 text-${colors.text} p-[15px]
               rounded-xl backdrop-blur-md transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20
@@ -955,7 +955,7 @@ const MilitaryCameraInterface = () => {
                     onClick={openFilePicker}
                     className={`
             relative group overflow-hidden
-            bg-${colors.primary}-900/10 hover:bg-${colors.primary}-800/20 text-${colors.text} p-6 
+            bg-${colors.primary}-900/10 hover:bg-${colors.primary}-800/20 text-${colors.text} p-[15px]
             rounded-xl backdrop-blur-md transition-all duration-300 
             border border-${colors.text}/20 hover:border-${colors.text}/50
             shadow-lg shadow-${colors.glow}/20
@@ -988,7 +988,7 @@ const MilitaryCameraInterface = () => {
               relative group overflow-hidden
               bg-${colors.primary}-900/10 hover:bg-${
                         colors.primary
-                      }-800/20 text-${colors.text} p-6 
+                      }-800/20 text-${colors.text} p-[15px]
               rounded-xl backdrop-blur-md transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20

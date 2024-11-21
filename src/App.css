@@ -150,7 +150,7 @@ body {
 
 .switch {
   border-radius: 3rem;
-  background: rgba(0, 0, 0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   height: 100%;
 }
 
@@ -204,8 +204,10 @@ body {
 }
 
 .custom-button-spacing {
-  padding:10px 37px;
+  padding: 10px 37px;
 }
+
+
 
 @media only screen and (max-width:1680px) {
   .switches-container label {
@@ -224,11 +226,14 @@ body {
 
 @media only screen and (max-width:767px) {
   .custom-theme-position {
-    left: auto;
+    left: 1rem;
     margin: 0px;
-    top: 8rem;
-    flex-direction: column;
+    top: 14rem;
     gap: 10px;
+    padding: 10px;
+  }
+
+  .sm-custom-padding {
     padding: 10px;
   }
 
@@ -252,4 +257,9 @@ body {
     width: 25px;
     height: 25px;
   }
+
+  .custom-theme-position, .custom-num-spacing {
+    flex-direction: column;
+  }
+
 }
