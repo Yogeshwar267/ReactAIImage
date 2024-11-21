@@ -780,46 +780,57 @@ const MilitaryCameraInterface = () => {
                 {time.toLocaleTimeString()}
               </div>
               {/* {!snapshot && !outputImage?.length ? ( */}
-                <div>
-                  <div
-                    className={`switches-container ${
-                      colorScheme ? `bg-${colorScheme}-500/40` : "bg-gray-600"
-                    }`}
+              <div>
+                <div
+                  className={`switches-container ${
+                    colorScheme ? `bg-${colorScheme}-500/40` : "bg-gray-600"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    id="switchMonthly"
+                    name="switchPlan"
+                    value="Monthly"
+                    disabled={outputImage?.length}
+                    defaultChecked={true} // Default selected state
+                  />
+                  <input
+                    type="radio"
+                    id="switchYearly"
+                    name="switchPlan"
+                    value="Yearly"
+                    disabled={outputImage?.length}
+                  />
+                  <label
+                    htmlFor="switchMonthly"
+                    style={{ cursor: outputImage?.length ? "none" : "pointer" }}
                   >
-                    <input
-                      type="radio"
-                      id="switchMonthly"
-                      name="switchPlan"
-                      value="Monthly"
-                      disabled={outputImage?.length}
-                      defaultChecked={true} // Default selected state
-                    />
-                    <input
-                      type="radio"
-                      id="switchYearly"
-                      name="switchPlan"
-                      value="Yearly"
-                      disabled={outputImage?.length}
-
-                    />
-                    <label htmlFor="switchMonthly" style={{cursor : outputImage?.length ? 'none' : 'pointer'}}>HQ</label>
-                    <label htmlFor="switchYearly" style={{cursor : outputImage?.length ? 'none' : 'pointer'}}>Turbo</label>
-                    <div className="switch-wrapper">
-                      <div
-                        className="switch"
-                        style={{ color: colorScheme, fontWeight: 800 }}
-                      >
-                        <div>HQ</div>
-                        <div>Turbo</div>
-                      </div>
+                    HQ
+                  </label>
+                  <label
+                    htmlFor="switchYearly"
+                    style={{ cursor: outputImage?.length ? "none" : "pointer" }}
+                  >
+                    Turbo
+                  </label>
+                  <div className="switch-wrapper">
+                    <div
+                      className="switch"
+                      style={{ color: colorScheme, fontWeight: 800 }}
+                    >
+                      <div>HQ</div>
+                      <div>Turbo</div>
                     </div>
                   </div>
                 </div>
+              </div>
               {/* ) : null} */}
               {snapshot ? (
                 <div className="justify-items-end flex gap-2 items-center">
-                  <button
-                    className={`right-0 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
+                  {outputImage?.length ? (
+                    <>
+                      <button
+                        className={`right-0 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
                   ${
                     colorScheme === colorScheme
                       ? `bg-${colorScheme}-900/50 border-${colorScheme}-400/50`
@@ -827,20 +838,16 @@ const MilitaryCameraInterface = () => {
                   } transition-all duration-300 
               border border-${colors.text}/20 hover:border-${colors.text}/50
               shadow-lg shadow-${colors.glow}/20`}
-                    style={{
-                      height: "40px",
-                      width: "40px",
-                    }}
-                    onClick={handleGoBack}
-                  >
-                    <RotateCcw
-                      className={`w-6 h-6 group-hover:scale-110 transition-transform`}
-                    />
-                  </button>
-
-                  {outputImage?.length ? (
-                    <>
-                      {" "}
+                        style={{
+                          height: "40px",
+                          width: "40px",
+                        }}
+                        onClick={handleGoBack}
+                      >
+                        <RotateCcw
+                          className={`w-6 h-6 group-hover:scale-110 transition-transform`}
+                        />
+                      </button>
                       <button
                         className={`right-0 p-2 rounded-lg backdrop-blur-md border transition-all relative group overflow-hidden
                   ${
@@ -904,18 +911,18 @@ const MilitaryCameraInterface = () => {
           {/* Bottom controls */}
           <div className="absolute bottom-0 left-0 right-0 p-8 pr-0 flex justify-between items-center w-92">
             {/* {!outputImage?.length && !snapshot ? ( */}
-              <div className="space-x-2 w-max bg-black/40 p-4 rounded-lg">
-                <PromptSlider
-                  colorScheme={colorScheme}
-                  colors={colors}
-                  handlePromptChange={handlePromptChange}
-                  playButtonPress={playButtonPress}
-                  prompts={prompts}
-                  selectedPrompt={selectedPrompt}
-                  stopButtonPress={stopButtonPress}
-                  disabled={outputImage?.length}
-                />
-              </div>
+            <div className="space-x-2 w-max bg-black/40 p-4 rounded-lg">
+              <PromptSlider
+                colorScheme={colorScheme}
+                colors={colors}
+                handlePromptChange={handlePromptChange}
+                playButtonPress={playButtonPress}
+                prompts={prompts}
+                selectedPrompt={selectedPrompt}
+                stopButtonPress={stopButtonPress}
+                disabled={outputImage?.length}
+              />
+            </div>
             {/* ) : null} */}
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-8 pr-0 flex items-center justify-center w-max mx-auto justify-center ">
