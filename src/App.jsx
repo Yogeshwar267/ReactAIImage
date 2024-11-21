@@ -379,7 +379,7 @@ const MilitaryCameraInterface = () => {
         const blob = await response.blob();
 
         // Create a file from the blob
-        const file = new File([blob], "image.jpg", { type: blob.type });
+        const file = new File([blob], "image.jpg", { type: blob?.type });
 
         // Share the file
         await navigator.share({
