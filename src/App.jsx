@@ -413,7 +413,7 @@ const MilitaryCameraInterface = () => {
     formData.append("controlnet_weight", 0.55);
     formData.append(
       "model_name",
-      isBasicMode ? AI_MODEL_TYPE.TURBO : AI_MODEL_TYPE.HQ
+      isBasicMode ? AI_MODEL_TYPE.HQ : AI_MODEL_TYPE.TURBO
     );
 
     try {
