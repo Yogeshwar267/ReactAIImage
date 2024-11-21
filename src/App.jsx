@@ -391,7 +391,6 @@ const MilitaryCameraInterface = () => {
         alert("Image shared successfully!");
       } catch (error) {
         console.error("Error sharing:", error);
-        alert("Unable to share the image.");
       }
     } else {
       alert("Sharing is not supported in this browser.");
