@@ -406,7 +406,7 @@ const MilitaryCameraInterface = () => {
     const formData = new FormData();
     formData.append("prompt", prompt || selectedPrompt);
     formData.append("image", imageBlob);
-    formData.append("negative_prompt", negativeprompt);
+    // formData.append("negative_prompt", negativeprompt);
     formData.append("cgf_scale", 4.5);
     formData.append("controlnet_type", "depth");
     formData.append("controlnet_weight", 0.55);
