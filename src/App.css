@@ -1,0 +1,265 @@
+/* src/App.css */
+body {
+  background-color: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 2px solid #fff;
+}
+
+.header h1 {
+  font-size: 24px;
+}
+
+.radar {
+  background: url('radar.gif') no-repeat center center;
+  width: 50px;
+  height: 50px;
+}
+
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-container input {
+  margin: 10px;
+}
+
+.upload-container img {
+  width: 100px;
+  height: 100px;
+  margin-top: 10px;
+}
+
+.prompt-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.styled-select {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.styled-select:hover {
+  /* background: rgba(0, 128, 0, 0.5); */
+}
+
+.styled-select:focus {
+  outline: none;
+}
+
+.transformation {
+  margin-top: 30px;
+}
+
+.transformed-image {
+  max-width: 100%;
+  margin-top: 20px;
+}
+
+.actions button {
+  margin: 10px;
+  padding: 10px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background-color: #555;
+}
+
+.imageContainer {
+  height: 42vh;
+  width: 42vw;
+  /* background-color: rgba(250,250,250,0.2); */
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.image {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+
+/* Custom css */
+
+.container {
+  border: 0px;
+  width: 20rem;
+  padding: 0px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 40px;
+}
+
+.switches-container {
+  width: 10rem;
+  position: relative;
+  display: flex;
+  padding: 0;
+  position: relative;
+  line-height: 3rem;
+  border-radius: 3rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.switches-container input {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+}
+
+.switches-container label {
+  width: 50%;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  cursor: pointer;
+}
+
+.switch-wrapper {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  padding: 0.15rem;
+  z-index: 3;
+  transition: transform .5s cubic-bezier(.77, 0, .175, 1);
+}
+
+.switch {
+  border-radius: 3rem;
+  background: rgba(0, 0, 0, 0.7);
+  height: 100%;
+}
+
+.switch div {
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+  display: block;
+  transition: opacity .2s cubic-bezier(.77, 0, .175, 1) .125s;
+  will-change: opacity;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.switches-container input:nth-of-type(1):checked~.switch-wrapper {
+  transform: translateX(0%);
+}
+
+.switches-container input:nth-of-type(2):checked~.switch-wrapper {
+  transform: translateX(100%);
+}
+
+.switches-container input:nth-of-type(1):checked~.switch-wrapper .switch div:nth-of-type(1) {
+  opacity: 1;
+}
+
+.switches-container input:nth-of-type(2):checked~.switch-wrapper .switch div:nth-of-type(2) {
+  opacity: 1;
+}
+
+.slick-track {
+  display: flex !important;
+}
+
+.slick-list {
+  margin: 0 -10px;
+}
+
+.slick-slide {
+  margin: 0 5px;
+}
+
+.slick-prev, .slick-next {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.slick-prev:before, .slick-next:before {
+  font-size: 30px !important;
+}
+
+.custom-button-spacing {
+  padding: 10px 37px;
+}
+
+
+
+@media only screen and (max-width:1680px) {
+  .switches-container label {
+    font-size: 14px;
+  }
+
+  .switch div {
+    font-size: 14px;
+  }
+
+  .switches-container {
+    line-height: 2.4rem;
+    width: 10rem
+  }
+}
+
+@media only screen and (max-width:767px) {
+  .custom-theme-position {
+    left: 1rem;
+    margin: 0px;
+    top: 14rem;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .sm-custom-padding {
+    padding: 10px;
+  }
+
+  .custom-theme-position>button {
+    margin: 0px !important;
+    width: 100% !important;
+  }
+
+  .custom-footer-spacing {
+    gap: 20px;
+  }
+
+  .custom-footer-spacing>button {
+    margin: 0px !important;
+    padding: 15px;
+  }
+}
+
+@media only screen and (max-width:580px) {
+  .custom-footer-spacing>button>svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .custom-theme-position, .custom-num-spacing {
+    flex-direction: column;
+  }
+
+}
