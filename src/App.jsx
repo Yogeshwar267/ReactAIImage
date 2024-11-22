@@ -407,9 +407,9 @@ const MilitaryCameraInterface = () => {
     formData.append("prompt", prompt || selectedPrompt);
     formData.append("image", imageBlob);
     // formData.append("negative_prompt", negativeprompt);
-    formData.append("cgf_scale", 4.5);
-    formData.append("controlnet_type", "depth");
-    formData.append("controlnet_weight", 0.55);
+    // formData.append("cgf_scale", 4.5);
+    // formData.append("controlnet_type", "depth");
+    // formData.append("controlnet_weight", 0.55);
     formData.append(
       "model_name",
       isBasicMode ? AI_MODEL_TYPE.HQ : AI_MODEL_TYPE.TURBO
