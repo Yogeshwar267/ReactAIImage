@@ -25,6 +25,9 @@ import {
 import { SOUND_FILES } from "./shared/sounds";
 import useSound from "use-sound";
 import PromptSlider from "./components/PromptSlider";
+import MainModelView from "./components/MainModelView";
+import TurboView from "./components/TurboView";
+import FooterActions from "./components/FooterActions";
 const API_CONFIG = {
   STABLE_DIFFUSION_ENDPOINT: "YOUR_API_ENDPOINT_HERE",
   API_KEY: "YOUR_API_KEY_HERE",
@@ -101,11 +104,11 @@ const styles = {
 };
 
 function base64ToBlob(base64, contentType = "", sliceSize = 512) {
-  const byteCharacters = atob(base64.split(",")[1]); // Remove the data URI prefix
+  const byteCharacters = atob(base64?.split(",")[1]); // Remove the data URI prefix
   const byteArrays = [];
 
   for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-    const slice = byteCharacters.slice(offset, offset + sliceSize);
+    const slice = byteCharacters?.slice(offset, offset + sliceSize);
 
     const byteNumbers = new Array(slice.length);
     for (let i = 0; i < slice.length; i++) {
@@ -142,6 +145,25 @@ const MilitaryCameraInterface = () => {
   const [imageError, setImageError] = useState("");
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isBasicMode, setIsBasicMode] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState("Monthly");
+  let abortController = useRef(null);
+  let pollingAbortController = useRef(null);
+  let pollingTimeout = useRef(null); // To store the timeout ID for polling
+  let currentRequestId = useRef(null); // To track the active request ID
+
+  useEffect(() => {
+    if (abortController.current) {
+      abortController.current.abort(); // Cancel the previous request
+      abortController.current = null; // Reset abortController after aborting
+    }
+
+    // If there's a previous polling request, abort it
+    if (pollingAbortController.current) {
+      pollingAbortController.current.abort(); // Cancel the previous polling request
+      clearTimeout(pollingTimeout.current);
+      pollingAbortController.current = null; // Reset pollingAbortController
+    }
+  }, [isBasicMode]);
 
   const [playButtonPress, { stopButtonPress }] = useSound(
     SOUND_FILES.buttonPress
@@ -166,12 +188,24 @@ const MilitaryCameraInterface = () => {
   };
 
   const [locationError, setLocationError] = useState(null);
+  const textClass = `text-${colorScheme}-100`;
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   const resetState = () => {
+    if (abortController.current) {
+      abortController.current.abort(); // Cancel the previous request
+      abortController.current = null; // Reset abortController after aborting
+    }
+
+    // If there's a previous polling request, abort it
+    if (pollingAbortController.current) {
+      pollingAbortController.current.abort(); // Cancel the previous polling request
+      clearTimeout(pollingTimeout.current);
+      pollingAbortController.current = null; // Reset pollingAbortController
+    }
     playButtonPress();
     setError(null); // Clear error
     setSnapshot(null); // Clear snapshot
@@ -181,6 +215,27 @@ const MilitaryCameraInterface = () => {
     setImageError(""); // Clear image error
   };
 
+  const resetCapturesImage = () => {
+    if (abortController.current) {
+      abortController.current.abort(); // Cancel the previous request
+      abortController.current = null; // Reset abortController after aborting
+    }
+
+    // If there's a previous polling request, abort it
+    if (pollingAbortController.current) {
+      pollingAbortController.current.abort(); // Cancel the previous polling request
+      clearTimeout(pollingTimeout.current);
+      pollingAbortController.current = null; // Reset pollingAbortController
+    }
+    playButtonPress();
+    setError(null); // Clear error
+    setSnapshot(null); // Clear snapshot
+    setOutputImage(null); // Clear output image
+    setLoading(false); // Reset loading state
+    setImageError(""); // Clear image error
+  };
+
+
   useEffect(() => {
     // Simulate boot sequence
     setTimeout(() => setBootSequence(false), 3000);
@@ -188,17 +243,20 @@ const MilitaryCameraInterface = () => {
 
   const getLocation = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
+      navigator.geolocation.watchPosition(
         (position) => {
           setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+            latitude: (position?.coords?.latitude)?.toFixed(6),
+            longitude: (position?.coords?.longitude)?.toFixed(6),
           });
           setError(null); // Clear any previous errors
         },
         (err) => {
           setLocationError(err.message);
           setLocation({ latitude: null, longitude: null });
+        },
+        {
+          timeout: 10000
         }
       );
     } else {
@@ -209,56 +267,13 @@ const MilitaryCameraInterface = () => {
   const generateImage = async () => {
     playCameraPress();
     capturePhoto();
-
-    return;
-    if (isProcessing) return;
-
-    try {
-      setIsProcessing(true);
-      setStatus("PROCESSING");
-      setError(null);
-
-      const requestConfig = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_CONFIG.API_KEY}`,
-        },
-        body: JSON.stringify({
-          prompt: "your_prompt_here",
-          negative_prompt: "your_negative_prompt_here",
-          steps: 20,
-          width: 512,
-          height: 512,
-          guidance_scale: 7.5,
-        }),
-      };
-
-      const response = await fetch(
-        API_CONFIG.STABLE_DIFFUSION_ENDPOINT,
-        requestConfig
-      );
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setGeneratedImages((prevImages) => [...prevImages, data.image]);
-      setStatus("STANDBY");
-    } catch (err) {
-      setError(err.message);
-      setStatus("ERROR");
-    } finally {
-      setIsProcessing(false);
-    }
   };
 
   useEffect(() => {
-    if (snapshot) {
+    if (snapshot && isBasicMode) {
       handleSubmitRequest(selectedPrompt);
     }
-  }, [snapshot]);
+  }, [snapshot, isBasicMode]);
 
   // Function to start the camera stream
   const startCameraStream = async (retries = 3) => {
@@ -350,6 +365,10 @@ const MilitaryCameraInterface = () => {
     outputImage?.length ? setOutputImage(null) : null;
   };
 
+  const changePrompt = (e) => {
+    setSelectedPrompt(e);
+  };
+
   const handleGoBack = () => {
     resetState();
     setSnapshot("");
@@ -400,13 +419,35 @@ const MilitaryCameraInterface = () => {
   const handleSubmitRequest = async (prompt) => {
     setLoading(true);
 
+    console.log(abortController, "abortController");
+
+    // If there's a previous request, abort it
+    if (abortController.current) {
+      console.log("Aborting previous request...");
+      abortController.current.abort(); // Cancel the previous request
+      abortController.current = null; // Reset abortController after aborting
+    }
+
+    // If there's a previous polling request, abort it
+    if (pollingAbortController.current) {
+      console.log("Aborting previous polling request...");
+      pollingAbortController.current.abort(); // Cancel the previous polling request
+      clearTimeout(pollingTimeout.current);
+      pollingAbortController.current = null; // Reset pollingAbortController
+    }
+
+    // Create a new AbortController for the new request
+    abortController.current = new AbortController();
+    pollingAbortController.current = new AbortController();
+    currentRequestId.current = Date.now();
+
     const contentType = "image/png"; // Specify the MIME type
     const imageBlob = base64ToBlob(snapshot, contentType);
 
     const formData = new FormData();
     formData.append("prompt", prompt || selectedPrompt);
     formData.append("image", imageBlob);
-    formData.append("negative_prompt", negativeprompt);
+    // formData.append("negative_prompt", negativeprompt);
     formData.append("cgf_scale", 4.5);
     formData.append("controlnet_type", "depth");
     formData.append("controlnet_weight", 0.55);
@@ -419,6 +460,7 @@ const MilitaryCameraInterface = () => {
       const response = await fetch(`${API_URL}generate-image-from-external`, {
         method: "POST",
         body: formData,
+        signal: abortController.current.signal,
       });
 
       const data = await response.json();
@@ -426,6 +468,7 @@ const MilitaryCameraInterface = () => {
       if (response.ok) {
         const requestId = data?.request_id;
         if (requestId) {
+          currentRequestId.current = requestId;
           pollStatus(requestId); // Start polling
         } else {
           throw new Error("Request ID is missing from the response");
@@ -446,8 +489,19 @@ const MilitaryCameraInterface = () => {
     let retries = 0;
 
     const checkStatus = async () => {
+      if (
+        pollingAbortController.current.signal.aborted ||
+        currentRequestId.current !== requestId
+      ) {
+        console.log(
+          "Polling aborted or request ID mismatch. Stopping polling."
+        );
+        return;
+      }
       try {
-        const response = await fetch(`${API_URL}check-status/${requestId}`);
+        const response = await fetch(`${API_URL}check-status/${requestId}`, {
+          signal: pollingAbortController.current.signal,
+        });
 
         const contentType = response.headers.get("Content-Type");
 
@@ -458,7 +512,7 @@ const MilitaryCameraInterface = () => {
             console.log("Image is still processing...");
             if (retries < maxRetries) {
               retries++;
-              setTimeout(checkStatus, pollInterval);
+              pollingTimeout.current = setTimeout(checkStatus, pollInterval);
             } else {
               setLoading(false);
               setImageError("Image generation timed out. Please retry.");
@@ -486,7 +540,6 @@ const MilitaryCameraInterface = () => {
     checkStatus(); // Start the first check
   };
 
-
   // Start the camera stream when the component mounts
   useEffect(() => {
     if (stream) {
@@ -505,6 +558,10 @@ const MilitaryCameraInterface = () => {
       }
     };
   }, [videoRef.current, isFrontCamera]);
+
+  const handlePlanToggle = (event) => {
+    setSelectedPlan(event.target.value);
+  };
 
   if (bootSequence) {
     return (
@@ -534,120 +591,26 @@ const MilitaryCameraInterface = () => {
     );
   }
 
-  // if (snapshot) {
-  //   return (
-  //     <div>
-  //       <div
-  //         className="mt-5 ml-5"
-  //         style={{
-  //           height: "20px",
-  //           width: "20px",
-  //         }}
-  //         onClick={handleGoBack}
-  //       >
-  //         <CircleArrowLeft className={`w-8 h-8`} />
-  //       </div>
-  //       <div className="justify-between p-4 items-end">
-  //         <PromptSelection
-  //           handleSelectChange={handlePromptChange}
-  //           colorScheme={colorScheme}
-  //         />
-  //       </div>
-  //       <div
-  //         className="mt-6"
-  //         style={{
-  //           display: "flex",
-  //           justifyContent: "space-between",
-  //           marginRight: "20px",
-  //           marginLeft: "20px",
-  //           alignItems: "center",
-  //         }}
-  //       >
-  //         <div
-  //           className={`imageContainer rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 bg-gradient-to-br from-${colorScheme}-500 to-black`}
-  //         >
-  //           <img src={snapshot} className="image rounded-md" />
-  //         </div>
-  //         <button
-  //           className={`
-  //   btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-  //   bg-${colorScheme}-600 text-white
-  //   hover:bg-${colorScheme}-700
-  //   focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-  //   disabled:bg-gray-400 disabled:cursor-not-allowed
-  // `}
-  //           onClick={handleSubmit}
-  //           disabled={!selectedPrompt}
-  //         >
-  //           Transform
-  //         </button>
-  //         <div
-  //           className={`imageContainer rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 bg-gradient-to-br from-${colorScheme}-500 to-black`}
-  //         >
-  //           {outputImage?.length ? (
-  //             <img src={outputImage} className="image rounded-md" />
-  //           ) : null}
-  //           {imageError?.length ? (
-  //             <h2 className={textClass}>{imageError}</h2>
-  //           ) : null}
-  //           {loading ? (
-  //             <div
-  //               className={`flex w-full animate-loading scanning-line`}
-  //               style={{
-  //                 borderColor: colorScheme, // Set border color dynamically
-  //               }}
-  //             />
-  //           ) : null}
-  //         </div>
-  //       </div>
-
-  //       <div
-  //         className="mt-10"
-  //         style={{
-  //           display: "flex",
-  //           justifyContent: "center",
-  //           marginRight: "20px",
-  //           marginLeft: "20px",
-  //           alignItems: "center",
-  //           gap: "20px",
-  //         }}
-  //       >
-  //         <button
-  //           className={`
-  //   btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-  //   bg-${colorScheme}-600 text-white
-  //   hover:bg-${colorScheme}-700
-  //   focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-  //   disabled:bg-gray-400 disabled:cursor-not-allowed
-  //   w-32
-  // `}
-  //           onClick={handleShare}
-  //           disabled={!outputImage}
-  //         >
-  //           Share
-  //         </button>
-  //         <button
-  //           className={`
-  //   btn px-6 py-3 h-12 text-lg font-semibold rounded-lg transition-all duration-300
-  //   bg-${colorScheme}-600 text-white
-  //   hover:bg-${colorScheme}-700
-  //   focus:outline-none focus:ring-4 focus:ring-${colorScheme}-500
-  //   disabled:bg-gray-400 disabled:cursor-not-allowed
-  //    w-32
-  // `}
-  //           onClick={handleDownload}
-  //           disabled={!outputImage}
-  //         >
-  //           Download
-  //         </button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  const cameraButtons = () => {
+    return (
+      <FooterActions
+        isProcessing={isProcessing}
+        generateImage={generateImage}
+        openFilePicker={openFilePicker}
+        handleFileChange={handleFileChange}
+        setIsFrontCamera={setIsFrontCamera}
+        colors={colors}
+        outputImage={outputImage}
+        snapshot={snapshot}
+        playButtonPress={playButtonPress}
+        fileInputRef={fileInputRef}
+      />
+    );
+  };
 
   return (
     <>
-      {loading ? (
+      {loading && isBasicMode ? (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center flex-col">
           <div className="text-white text-lg">Please wait...</div>
           {/* <button
@@ -682,7 +645,7 @@ const MilitaryCameraInterface = () => {
           className={`absolute inset-0 bg-gradient-to-b from-${colors.primary}-900/40 to-transparent z-10`}
         >
           {/* Color scheme switcher */}
-          {!outputImage?.length && !snapshot ? (
+          { (isBasicMode ? (!outputImage?.length && !snapshot) : true) ? (
             <div className="absolute top-14 right-4 flex space-x-2 z-50 right-0 left-0 w-max mx-auto justify-center bg-black/40 p-4 rounded-lg custom-theme-position">
               {Object.keys(colorSchemes).map((scheme) => {
                 return (
@@ -737,10 +700,10 @@ const MilitaryCameraInterface = () => {
         </div> */}
 
           {/* Top HUD */}
-          <div className="absolute top-10 left-0 right-0 p-4 font-mono text-sm flex justify-between items-start">
+          <div className="absolute top-6 left-0 right-0 p-4 font-mono text-sm flex justify-between items-start">
             <div className="space-y-2">
               <div
-                className={`backdrop-blur-md p-4 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 border-r sm_font_12`}
+                className={`backdrop-blur-md p-4 rounded-md border border-${colors.text}/20 shadow-lg shadow-${colors.glow}/20 border-r`}
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
               >
                 <div className={`text-${colors.text}`}>█ SYSTEM STATUS</div>
@@ -748,13 +711,13 @@ const MilitaryCameraInterface = () => {
                   <div className="flex justify-between">
                     <span className={`text-${colors.text}/70`}>LAT:</span>
                     <span className={`text-${colors.text}`}>
-                      {location.latitude}
+                      {location.latitude || '--'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className={`text-${colors.text}/70`}>LONG:</span>
                     <span className={`text-${colors.text}`}>
-                      {location.longitude}
+                      {location.longitude || '--'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -787,25 +750,27 @@ const MilitaryCameraInterface = () => {
                     id="switchMonthly"
                     name="switchPlan"
                     value="Monthly"
-                    disabled={outputImage?.length}
+                    disabled={true || outputImage?.length}
                     defaultChecked={true} // Default selected state
+                    onChange={() => setIsBasicMode(true)}
                   />
                   <input
                     type="radio"
                     id="switchYearly"
                     name="switchPlan"
                     value="Yearly"
-                    disabled={outputImage?.length}
+                    disabled={true || outputImage?.length}
+                    onChange={() => setIsBasicMode(false)}
                   />
                   <label
                     htmlFor="switchMonthly"
-                    style={{ cursor: outputImage?.length ? "none" : "pointer" }}
+                    style={{ pointerEvents: true || outputImage?.length ? "none" : "pointer" }}
                   >
                     HQ
                   </label>
                   <label
                     htmlFor="switchYearly"
-                    style={{ cursor: outputImage?.length ? "none" : "pointer" }}
+                    style={{ pointerEvents: true || outputImage?.length ? "none" : "pointer" }}
                   >
                     Turbo
                   </label>
@@ -905,9 +870,13 @@ const MilitaryCameraInterface = () => {
           )}
 
           {/* Bottom controls */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-between items-center w-92 custom-num-spacing-container">
+          {/* {isBasicMode ? ( */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-between items-center"
+          style={{width: 'fit-content'}}
+          >
             {/* {!outputImage?.length && !snapshot ? ( */}
-            <div className="space-x-2 w-max bg-black/40 p-2 rounded-lg sm-custom-padding">
+            <div className="space-x-2 w-max bg-black/40 p-2 rounded-lg sm-custom-padding z-50 items-center justify-items-center">
+            <div className={`text-${colors.text} mb-2`}>Select Prompt</div>
               <PromptSlider
                 colorScheme={colorScheme}
                 colors={colors}
@@ -919,90 +888,9 @@ const MilitaryCameraInterface = () => {
                 disabled={outputImage?.length}
               />
             </div>
-            {/* ) : null} */}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-4 pr-0 flex items-center justify-center w-max mx-auto justify-center ">
-            {/* testing div */}
-            <div className="flex justify-center items-center space-x-8 custom-footer-spacing">
-              {!outputImage?.length && !snapshot?.length ? (
-                <>
-                  <button
-                    onClick={generateImage}
-                    disabled={isProcessing}
-                    className={`
-              relative group overflow-hidden
-              bg-${colors.primary}-900/10 hover:bg-${
-                      colors.primary
-                    }-800/20 text-${colors.text} p-[15px]
-              rounded-xl backdrop-blur-md transition-all duration-300 
-              border border-${colors.text}/20 hover:border-${colors.text}/50
-              shadow-lg shadow-${colors.glow}/20
-              ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}
-            `}
-                    style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
-                  >
-                    <Camera
-                      className={`w-8 h-8 group-hover:scale-110 transition-transform ${
-                        isProcessing ? "animate-pulse" : ""
-                      }`}
-                    />
-                  </button>
-                  <button
-                    onClick={openFilePicker}
-                    className={`
-            relative group overflow-hidden
-            bg-${colors.primary}-900/10 hover:bg-${colors.primary}-800/20 text-${colors.text} p-[15px]
-            rounded-xl backdrop-blur-md transition-all duration-300 
-            border border-${colors.text}/20 hover:border-${colors.text}/50
-            shadow-lg shadow-${colors.glow}/20
-          `}
-                    style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
-                  >
-                    <div
-                      className={`absolute inset-0 bg-gradient-to-r from-${colors.primary}-500/10 to-${colors.accent}-500/10 opacity-0 group-hover:opacity-100 transition-opacity`}
-                    />
-                    <Folder className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden-input"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                  />
-                  {/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
-                    navigator.userAgent
-                  ) ? (
-                    <button
-                      onClick={() => {
-                        playButtonPress();
-                        setIsFrontCamera((prev) => !prev);
-                      }}
-                      disabled={isProcessing}
-                      className={`
-              relative group overflow-hidden
-              bg-${colors.primary}-900/10 hover:bg-${
-                        colors.primary
-                      }-800/20 text-${colors.text} p-[15px]
-              rounded-xl backdrop-blur-md transition-all duration-300 
-              border border-${colors.text}/20 hover:border-${colors.text}/50
-              shadow-lg shadow-${colors.glow}/20
-              ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}
-            `}
-                      style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
-                    >
-                      <SwitchCamera
-                        className={`w-8 h-8 group-hover:scale-110 transition-transform ${
-                          isProcessing ? "animate-pulse" : ""
-                        }`}
-                      />
-                    </button>
-                  ) : null}
-                </>
-              ) : null}
-            </div>
-          </div>
+          {/* // ) : null} */}
+          {/* {isBasicMode ? cameraButtons() : null} */}
 
           {/* Corner brackets */}
           <div
@@ -1017,16 +905,6 @@ const MilitaryCameraInterface = () => {
           <div
             className={`absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-${colors.text}/30`}
           />
-
-          {/* Scanning line effect */}
-          {!snapshot ? (
-            <div
-              className={`absolute top-0 left-0 right-0 backdrop-blur-sm animate-scan scanning-line bg-${colorScheme} border-${colorScheme}`}
-              style={{
-                borderColor: colorScheme, // Set border color dynamically
-              }}
-            />
-          ) : null}
         </div>
         <div style={styles.container}>
           <div
@@ -1039,19 +917,31 @@ const MilitaryCameraInterface = () => {
               opacity: 0.2,
             }}
           />
-          {snapshot ? (
-            <img
-              src={outputImage?.length ? outputImage : snapshot}
-              className="image rounded-md"
+          {isBasicMode ? (
+            <MainModelView
+              snapshot={snapshot}
+              outputImage={outputImage}
+              colorScheme={colorScheme}
+              videoRef={videoRef}
+              loading={loading}
+              cameraButtons={cameraButtons}
             />
           ) : (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className={`rounded-lg w-full max-w-full h-screen 
-            bg-gradient-to-br from-${colorScheme}-500 to-black`}
-            ></video>
+            <TurboView
+              colorScheme={colorScheme}
+              colors={colors}
+              snapshot={snapshot}
+              outputImage={outputImage}
+              imageError={imageError}
+              loading={loading}
+              textClass={textClass}
+              videoRef={videoRef}
+              cameraButtons={cameraButtons}
+              selectedPrompt={selectedPrompt}
+              changePrompt={changePrompt}
+              handleSubmitRequest={handleSubmitRequest}
+              resetState={resetCapturesImage}
+            />
           )}
           <canvas ref={canvasRef} style={styles.canvas}></canvas>
         </div>

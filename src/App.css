@@ -85,12 +85,14 @@ body {
 }
 
 .imageContainer {
-  height: 42vh;
-  width: 42vw;
   /* background-color: rgba(250,250,250,0.2); */
   align-items: center;
   justify-content: center;
   display: flex;
+}
+
+.scanning_width {
+  width: 41.5vw;
 }
 
 .image {

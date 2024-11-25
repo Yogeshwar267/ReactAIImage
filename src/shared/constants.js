@@ -14,7 +14,9 @@ export const prompts = [
 
 export const AI_MODEL_TYPE = {
   HQ: "juggernautXL_v7Rundiffusion",
-  TURBO: "DreamShaperXL_Turbo_dpmppSdeKarras_half_pruned_6",
+  TURBO: "sd_xl_turbo_1.0_fp16",
 };
 
 export const API_URL = 'https://api.sd-camera.projectlabs.in/'
+
+export const turboImageSize = 42;
